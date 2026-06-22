@@ -24,48 +24,30 @@ body {
 
 /* ═══ 滚动动画基础 ═══ */
 [data-animate] {
+  --_tx: 0;
+  --_ty: 40px;
+  --_scale: 1;
+  --_blur: 0;
   opacity: 0;
   transition-property: opacity, transform, filter;
   transition-duration: 0.9s;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   transition-delay: var(--stagger, 0s);
-  transform: translateY(40px);
+  transform: translateX(var(--_tx)) translateY(var(--_ty)) scale(var(--_scale));
+  filter: blur(var(--_blur));
 }
 
-[data-animate="left"] {
-  transform: translateX(-80px) !important;
-}
+[data-animate="left"]  { --_tx: -80px; --_ty: 0; }
+[data-animate="right"] { --_tx: 80px;  --_ty: 0; }
+[data-animate="scale"] { --_ty: 0; --_scale: 0.88; }
+[data-animate="blur"]  { --_ty: 20px; --_blur: 10px; }
+[data-animate="rise"]  { --_ty: 100px; }
 
-[data-animate="right"] {
-  transform: translateX(80px) !important;
-}
-
-[data-animate="scale"] {
-  transform: scale(0.88) !important;
-}
-
-[data-animate="blur"] {
-  transform: translateY(20px) !important;
-  filter: blur(10px);
-}
-
-[data-animate="rise"] {
-  transform: translateY(100px) !important;
-}
-
-/* 可见 */
 [data-animate].is-visible {
-  opacity: 1 !important;
-  transform: none !important;
-  filter: none !important;
+  opacity: 1;
+  transform: none;
+  filter: none;
 }
-
-/* 浮动动画 */
-@keyframes gentle-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-.float { animation: gentle-float 4s ease-in-out infinite; }
 
 /* 背景网格 */
 .grid-bg {

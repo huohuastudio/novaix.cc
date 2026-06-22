@@ -38,10 +38,8 @@ const testimonials = [
   },
 ];
 
-const col1 = [testimonials[0], testimonials[3]];
-const col2 = [testimonials[1], testimonials[2]];
-const col3 = [testimonials[4], testimonials[5]];
-const cols = [col1, col2, col3];
+const cols: typeof testimonials[] = [[], [], []];
+testimonials.forEach((t, i) => cols[i % 3].push(t));
 ---
 
 <section class="px-6 py-20 sm:py-28">

@@ -69,21 +69,22 @@ const {
         lens.className = "magnify-lens";
         wrap.appendChild(lens);
 
-        const update = (e: MouseEvent) => {
-          const rect = wrap.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const lw = lens.offsetWidth / 2;
-          const lh = lens.offsetHeight / 2;
+        let rect: DOMRect;
+        const lw = 80; // lens 宽高的一半 (160/2)
 
-          lens.style.left = `${x - lw}px`;
-          lens.style.top = `${y - lh}px`;
+        wrap.addEventListener("mouseenter", () => {
+          rect = wrap.getBoundingClientRect();
           lens.style.backgroundImage = `url(${img.src})`;
           lens.style.backgroundSize = `${rect.width * ZOOM}px ${rect.height * ZOOM}px`;
-          lens.style.backgroundPosition = `-${x * ZOOM - lw}px -${y * ZOOM - lh}px`;
-        };
+        });
 
-        wrap.addEventListener("mousemove", update);
+        wrap.addEventListener("mousemove", (e: MouseEvent) => {
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          lens.style.left = `${x - lw}px`;
+          lens.style.top = `${y - lw}px`;
+          lens.style.backgroundPosition = `-${x * ZOOM - lw}px -${y * ZOOM - lw}px`;
+        }, { passive: true });
       });
     </script>
   </body>
