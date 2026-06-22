@@ -1,0 +1,145 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Hero from "../components/Hero.astro";
+import Showcase from "../components/Showcase.astro";
+import FeatureGrid from "../components/FeatureGrid.astro";
+import Architecture from "../components/Architecture.astro";
+import Testimonials from "../components/Testimonials.astro";
+import FAQ from "../components/FAQ.astro";
+import CTA from "../components/CTA.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout>
+  <Header />
+  <main>
+    <Hero />
+
+    <!-- 双列并排：节点 + 实例 -->
+    <div id="features"></div>
+    <Showcase layout="pair" items={[
+      {
+        title: "节点管理与监控",
+        description: "查看每个节点的资源配置、运行状态和连接信息。支持多区域部署，一键测试连通性。",
+        image: "/screenshots/node-detail.png",
+        imageAlt: "节点详情页面",
+      },
+      {
+        title: "实例详情与操作",
+        description: "在一个页面完成实例的所有管理操作：启停、重装、快照、VNC 控制台。",
+        image: "/screenshots/instance-detail.png",
+        imageAlt: "实例详情页面",
+      },
+    ]} />
+
+    <!-- 左文右图：订单 -->
+    <Showcase
+      layout="left"
+      bg
+      tag="Billing"
+      title="完整的计费体系"
+      description="支持月付、季付、年付及按小时计费。自动扣费、余额不足自动暂停，完整的订单生命周期管理。"
+      features={[
+        "多种计费周期，按小时精确计费",
+        "自动扣费与余额不足暂停",
+        "下单/支付时自动资源预检",
+        "优惠券与流量包",
+      ]}
+      image="/screenshots/billing.png"
+      imageAlt="订单管理界面"
+    />
+
+    <!-- 右文左图：套餐（和上面交替） -->
+    <Showcase
+      layout="right"
+      tag="Plans"
+      title="灵活的套餐配置"
+      description="自定义 CPU、内存、磁盘、带宽组合。套餐分组管理，库存实时统计，资源不足自动拦截下单。"
+      features={[
+        "自定义资源规格与定价",
+        "多种计费周期自由组合",
+        "套餐分组，前台分类展示",
+        "试建验证，确保创建链路畅通",
+      ]}
+      image="/screenshots/plans.png"
+      imageAlt="套餐管理界面"
+    />
+
+    <!-- 左文右图：插件 -->
+    <Showcase
+      layout="left"
+      bg
+      tag="Plugins"
+      title="插件化扩展"
+      description="支付渠道、短信、邮件、KYC 验证均为独立插件。一键启停，不改代码即可扩展系统能力。"
+      features={[
+        "支付插件：易支付及更多渠道",
+        "通知插件：短信、邮件多渠道发送",
+        "KYC 插件：阿里云、腾讯云身份验证",
+        "主题市场：自定义前端界面",
+      ]}
+      image="/screenshots/plugins.png"
+      imageAlt="插件管理界面"
+    />
+
+    <!-- 右文左图：仪表盘 -->
+    <Showcase
+      layout="right"
+      tag="Dashboard"
+      title="运营数据一目了然"
+      description="节点、实例、用户、收入四大核心指标实时展示。30 天收入趋势图，快速掌握业务全貌。"
+      features={[
+        "四大核心运营指标实时展示",
+        "30 天收入趋势图表",
+        "快速开始引导，完成初始配置",
+        "待处理工单与系统事件提醒",
+      ]}
+      image="/screenshots/dashboard.png"
+      imageAlt="仪表盘界面"
+    />
+
+    <!-- 左文右图：用户管理 -->
+    <Showcase
+      layout="left"
+      bg
+      tag="Users"
+      title="用户与代理管理"
+      description="完整的用户体系：注册登录、实名认证、余额管理。代理分销支持差异化返佣比例与折扣矩阵。"
+      features={[
+        "邮箱和手机号注册登录",
+        "TOTP 两步验证，敏感操作保护",
+        "代理商分组，差异化返佣与折扣",
+        "用户余额与充值记录管理",
+      ]}
+      image="/screenshots/users.png"
+      imageAlt="用户管理界面"
+    />
+
+    <!-- 集中功能网格 -->
+    <FeatureGrid
+      title="还有更多"
+      description="覆盖 IDC 运营的方方面面。"
+      items={[
+        { title: "节点组集群", description: "同组节点支持在线热迁移，实例跨节点无缝漂移。" },
+        { title: "HA 高可用", description: "节点故障自动疏散实例到健康节点，业务零中断。" },
+        { title: "VNC 控制台", description: "浏览器内直连实例桌面，支持虚拟机和容器。" },
+        { title: "快照备份", description: "一键创建实例快照，秒级恢复到任意历史状态。" },
+        { title: "IP 池管理", description: "IPv4/IPv6 灵活分配与回收，按节点和区域管理。" },
+        { title: "VPC 私有网络", description: "基于 OVN 的 L2 隔离网络，子网划分与安全组。" },
+        { title: "工单系统", description: "用户与管理员沟通渠道，支持分类和状态流转。" },
+        { title: "公告管理", description: "面向用户的通知发布，支持置顶和定时发布。" },
+        { title: "在线更新", description: "后台一键升级，自动备份、迁移、替换，失败自动回滚。" },
+        { title: "主题市场", description: "前端源码开源，社区主题一键安装。" },
+        { title: "多渠道通知", description: "Telegram、钉钉、企微、Webhook 并发推送。" },
+        { title: "邮件服务", description: "支持 SMTP、Mailgun、Resend 三种发送渠道。" },
+      ]}
+    />
+
+    <Architecture />
+    <Testimonials />
+    <FAQ />
+    <CTA />
+  </main>
+  <Footer />
+</Layout>

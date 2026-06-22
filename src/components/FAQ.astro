@@ -1,0 +1,66 @@
+---
+const faqs = [
+  {
+    q: "Novaix 是免费的吗？",
+    a: "Novaix 提供免费试用。正式使用需要购买许可证，具体价格请前往授权中心查看。",
+  },
+  {
+    q: "支持哪些操作系统部署？",
+    a: "Novaix 编译为单个二进制文件，支持 Linux amd64 和 arm64 架构。推荐 Ubuntu 22.04+、Debian 12+ 或 CentOS 9+。",
+  },
+  {
+    q: "默认使用 SQLite，性能够用吗？",
+    a: "对于中小规模（数百台实例以内），SQLite 完全够用。如果业务增长需要更高并发，只需修改一行配置即可切换到 MySQL，无需重新部署。",
+  },
+  {
+    q: "底层使用什么虚拟化技术？",
+    a: "Novaix 支持 LXC 容器和 QEMU/KVM 虚拟机，通过统一的管理接口操作，无需关心底层差异。",
+  },
+  {
+    q: "支持哪些支付方式？",
+    a: "目前内置易支付插件，兼容彩虹易支付、ZPAY 等通用规范。支付渠道为插件化设计，后续会支持更多渠道。",
+  },
+  {
+    q: "数据安全如何保障？",
+    a: "SQLite 模式下，系统在每次在线更新前自动备份数据库文件。迁移失败会自动回滚到备份版本。MySQL 模式下建议配合定时备份策略。",
+  },
+  {
+    q: "可以自定义前端界面吗？",
+    a: "可以。Novaix 支持主题系统，前端源码完全开源。你可以基于默认主题二次开发，也可以从主题市场下载社区主题。",
+  },
+  {
+    q: "和 WHMCS / 魔方财务是什么关系？",
+    a: "Novaix 是独立的 IDC 管理系统，自带完整的用户前台和计费功能。如果你已有 WHMCS 或魔方财务，也可以通过集成模块对接，但大多数场景下无需额外的财务系统。",
+  },
+];
+---
+
+<section id="faq" class="px-6 py-20 sm:py-28">
+  <div class="mx-auto max-w-3xl">
+    <h2 class="font-display text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50" data-animate>
+      常见问题
+    </h2>
+
+    <div class="mt-10 divide-y divide-zinc-200 dark:divide-zinc-700" data-animate style="--stagger:.1s">
+      {faqs.map((faq) => (
+        <details class="group">
+          <summary class="flex cursor-pointer items-center justify-between py-5 text-[0.95rem] font-medium text-zinc-900 transition-colors hover:text-accent [&::-webkit-details-marker]:hidden dark:text-zinc-50">
+            {faq.q}
+            <svg
+              class="h-5 w-5 shrink-0 text-zinc-400 transition-transform group-open:rotate-45 dark:text-zinc-500"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+          </summary>
+          <div class="pb-5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+            {faq.a}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

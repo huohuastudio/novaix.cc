@@ -1,0 +1,101 @@
+---
+const testimonials = [
+  {
+    quote: "之前用 SolusVM，迁移到 Novaix 后运维效率提升了一个量级。单文件部署太省心了，更新也是后台一键搞定。",
+    name: "张明",
+    role: "IDC 运维负责人",
+    variant: "dark",
+  },
+  {
+    quote: "SQLite 零依赖开箱即用，小规模起步完全不需要折腾数据库。",
+    name: "李强",
+    role: "VPS 服务商",
+    variant: "light",
+  },
+  {
+    quote: "代理分销体系做得很灵活，差异化返佣和折扣矩阵帮我们快速建立了分销网络。",
+    name: "王磊",
+    role: "主机代理商",
+    variant: "light",
+  },
+  {
+    quote: "工单系统、公告、优惠券这些运营工具全都内置了，不用再额外对接第三方。一个系统搞定所有事情。",
+    name: "赵鹏",
+    role: "云服务创业者",
+    variant: "light",
+  },
+  {
+    quote: "HA 高可用和热迁移功能让我们节点维护时不用再通知客户了，业务完全不中断。这才是生产级该有的样子。",
+    name: "陈刚",
+    role: "数据中心管理员",
+    variant: "accent",
+  },
+  {
+    quote: "从下载到跑起来第一个实例，真的只用了不到十分钟。文档写得很清楚。",
+    name: "周浩",
+    role: "个人站长",
+    variant: "light",
+  },
+];
+
+const col1 = [testimonials[0], testimonials[3]];
+const col2 = [testimonials[1], testimonials[2]];
+const col3 = [testimonials[4], testimonials[5]];
+const cols = [col1, col2, col3];
+---
+
+<section class="px-6 py-20 sm:py-28">
+  <div class="mx-auto max-w-6xl">
+    <div data-animate>
+      <h2 class="font-display text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50">
+        用户怎么说
+      </h2>
+      <p class="mt-3 text-zinc-500 dark:text-zinc-400">来自正在使用 Novaix 的服务商。</p>
+    </div>
+
+    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-animate="scale" style="--stagger:.1s">
+      {cols.map((col) => (
+        <div class="flex flex-col gap-4">
+          {col.map((t, j) => (
+            <div
+              class:list={[
+                "rounded-2xl p-6",
+                j === 0 && "flex-1",
+                t.variant === "dark" && "bg-zinc-900 text-white",
+                t.variant === "accent" && "bg-accent text-white",
+                t.variant === "light" && "border border-zinc-200/60 bg-white dark:border-zinc-700/60 dark:bg-zinc-900",
+              ]}
+            >
+              <p
+                class:list={[
+                  "text-[0.95rem] leading-relaxed",
+                  t.variant === "light" ? "text-zinc-700 dark:text-zinc-200" : "text-white/90",
+                ]}
+              >
+                "{t.quote}"
+              </p>
+              <div class="mt-5 flex items-center gap-3">
+                <div
+                  class:list={[
+                    "flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold",
+                    t.variant === "light" ? "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300" : "bg-white/15 text-white",
+                  ]}
+                >
+                  {t.name.charAt(0)}
+                </div>
+                <div>
+                  <div class:list={["text-sm font-semibold", t.variant === "light" ? "text-zinc-900 dark:text-zinc-50" : "text-white"]}>
+                    {t.name}
+                  </div>
+                  <div class:list={["text-xs", t.variant === "light" ? "text-zinc-400 dark:text-zinc-500" : "text-white/60"]}>
+                    {t.role}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

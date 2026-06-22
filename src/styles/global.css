@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #4f46e5;
+  --color-accent-light: #818cf8;
+  --color-accent-50: #eef2ff;
+
+  --font-display: "Sora", "Noto Sans SC", system-ui, sans-serif;
+  --font-body: "Noto Sans SC", "Sora", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+::selection { background-color: oklch(0.55 0.22 270); color: white; }
+
+/* ═══ 滚动动画基础 ═══ */
+[data-animate] {
+  opacity: 0;
+  transition-property: opacity, transform, filter;
+  transition-duration: 0.9s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--stagger, 0s);
+  transform: translateY(40px);
+}
+
+[data-animate="left"] {
+  transform: translateX(-80px) !important;
+}
+
+[data-animate="right"] {
+  transform: translateX(80px) !important;
+}
+
+[data-animate="scale"] {
+  transform: scale(0.88) !important;
+}
+
+[data-animate="blur"] {
+  transform: translateY(20px) !important;
+  filter: blur(10px);
+}
+
+[data-animate="rise"] {
+  transform: translateY(100px) !important;
+}
+
+/* 可见 */
+[data-animate].is-visible {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* 浮动动画 */
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float { animation: gentle-float 4s ease-in-out infinite; }
+
+/* 背景网格 */
+.grid-bg {
+  background-size: 48px 48px;
+  background-image:
+    linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+    linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, #27272a 1px, transparent 1px),
+      linear-gradient(to bottom, #27272a 1px, transparent 1px);
+  }
+}
+
+/* 图片放大镜 */
+.magnify {
+  position: relative;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.magnify .magnify-lens {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+  background-repeat: no-repeat;
+  /* 水滴折射效果 */
+  border: 1.5px solid rgba(255,255,255,0.5);
+  box-shadow:
+    0 2px 20px rgba(0,0,0,0.12),
+    inset 0 -4px 12px rgba(255,255,255,0.3),
+    inset 0 4px 8px rgba(0,0,0,0.04),
+    0 0 0 1px rgba(0,0,0,0.06);
+  filter: contrast(1.03) saturate(1.05);
+}
+
+.magnify:hover .magnify-lens {
+  opacity: 1;
+}
+
+/* Hero 截图 3D（仅桌面端） */
+@media (min-width: 1024px) {
+  .hero-visual {
+    transform: perspective(1800px) rotateY(-8deg) rotateX(3deg);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hero-visual:hover {
+    transform: perspective(1800px) rotateY(-2deg) rotateX(1deg);
+  }
+}

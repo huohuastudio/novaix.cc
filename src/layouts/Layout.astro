@@ -1,0 +1,83 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Novaix — 商业化 IDC 管理系统",
+  description = "面向中小型 VPS 服务商的一站式 IDC 管理系统。单文件部署，开箱即用。",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://novaix.cc" />
+    <meta property="og:image" content="https://novaix.cc/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <link rel="canonical" href="https://novaix.cc" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Sora:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen overflow-x-clip bg-white text-zinc-800 antialiased dark:bg-zinc-950 dark:text-zinc-100">
+    <slot />
+    <script>
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add("is-visible");
+              io.unobserve(e.target);
+            }
+          }
+        },
+        { threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
+      );
+      document.querySelectorAll("[data-animate]").forEach((el) => io.observe(el));
+
+      // 放大镜
+      const ZOOM = 2;
+      document.querySelectorAll<HTMLElement>(".magnify").forEach((wrap) => {
+        const img = wrap.querySelector("img");
+        if (!img) return;
+        const lens = document.createElement("div");
+        lens.className = "magnify-lens";
+        wrap.appendChild(lens);
+
+        const update = (e: MouseEvent) => {
+          const rect = wrap.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const lw = lens.offsetWidth / 2;
+          const lh = lens.offsetHeight / 2;
+
+          lens.style.left = `${x - lw}px`;
+          lens.style.top = `${y - lh}px`;
+          lens.style.backgroundImage = `url(${img.src})`;
+          lens.style.backgroundSize = `${rect.width * ZOOM}px ${rect.height * ZOOM}px`;
+          lens.style.backgroundPosition = `-${x * ZOOM - lw}px -${y * ZOOM - lh}px`;
+        };
+
+        wrap.addEventListener("mousemove", update);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,68 @@
+<section class="relative overflow-hidden pb-0 pt-28 sm:pt-36 lg:min-h-[92vh] lg:pt-40">
+  <div class="grid-bg pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_50%_at_50%_40%,black_40%,transparent_100%)]"></div>
+
+  <div class="relative z-10 mx-auto max-w-6xl px-6">
+    <div class="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
+
+      <div>
+        <h1 class="font-display text-[2.6rem] font-bold leading-[1.12] tracking-tight text-zinc-900 sm:text-5xl lg:text-[3.5rem] dark:text-zinc-50" data-animate style="--stagger:.06s">
+          让云主机销售<br/>简单高效。
+        </h1>
+
+        <p class="mt-5 max-w-[26rem] text-[1.05rem] leading-relaxed text-zinc-500 dark:text-zinc-400" data-animate style="--stagger:.12s">
+          面向中小型 VPS 服务商的 IDC 管理系统。单文件部署，开箱即用，从节点管理到计费订单全覆盖。
+        </p>
+
+        <div class="mt-8 flex flex-wrap gap-3" data-animate style="--stagger:.18s">
+          <a
+            href="https://github.com/huohuastudio/novaix-releases/releases"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-light"
+          >
+            下载安装
+            <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          </a>
+          <a
+            href="https://docs.huohuastudio.com/novaix"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
+          >
+            阅读文档
+          </a>
+        </div>
+      </div>
+
+      <!-- 产品截图 -->
+      <div data-animate style="--stagger:.15s">
+        <div class="hero-visual rounded-2xl border border-zinc-200/80 bg-white p-1 ring-1 ring-zinc-100/50 dark:border-zinc-700/80 dark:bg-zinc-900 dark:ring-zinc-800/50">
+          <div class="flex items-center gap-1.5 px-3.5 py-2.5">
+            <span class="h-[9px] w-[9px] rounded-full bg-[#ff5f57]"></span>
+            <span class="h-[9px] w-[9px] rounded-full bg-[#febc2e]"></span>
+            <span class="h-[9px] w-[9px] rounded-full bg-[#28c840]"></span>
+          </div>
+          <div class="overflow-hidden rounded-b-xl">
+            <img
+              src="/screenshots/dashboard-full.png"
+              alt="Novaix 管理后台"
+              class="aspect-[16/10] w-full bg-zinc-50 object-cover object-top dark:bg-zinc-800"
+              loading="eager"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="relative z-10 mt-16 border-t border-zinc-100 dark:border-zinc-800">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-4 px-6 py-6" data-animate style="--stagger:.3s">
+      {["单文件部署", "SQLite 零依赖", "在线更新", "插件化架构"].map((label) => (
+        <div class="flex items-center gap-2.5 text-sm text-zinc-400 dark:text-zinc-500">
+          <span class="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+          {label}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
