@@ -8,7 +8,8 @@ interface Props {
 const { title, description, items } = Astro.props;
 ---
 
-<section class="bg-zinc-900 px-6 py-20 sm:py-28 dark:bg-zinc-950">
+<section class="relative overflow-hidden bg-zinc-900 px-6 py-20 sm:py-28 dark:bg-zinc-950">
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(79,70,229,0.12),transparent)]"></div>
   <div class="mx-auto max-w-6xl">
     {(title || description) && (
       <div class="mb-14" data-animate="blur">

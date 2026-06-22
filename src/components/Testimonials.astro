@@ -42,7 +42,8 @@ const cols: typeof testimonials[] = [[], [], []];
 testimonials.forEach((t, i) => cols[i % 3].push(t));
 ---
 
-<section class="px-6 py-20 sm:py-28">
+<section class="relative overflow-hidden px-6 py-20 sm:py-28">
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_80%_40%,rgba(79,70,229,0.04),transparent)]"></div>
   <div class="mx-auto max-w-6xl">
     <div data-animate>
       <h2 class="font-display text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50">
