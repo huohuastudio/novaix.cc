@@ -28,4 +28,4 @@ pnpm preview    # 本地预览构建产物
 
 ## License
 
-Copyright &copy; [Spark Studio](https://novaix.cc). All rights reserved.
+Copyright &copy; [Spark Studio](https://huohuastudio.com). All rights reserved.
