@@ -21,9 +21,14 @@ const links = [
           href={l.href}
           target={l.ext ? "_blank" : undefined}
           rel={l.ext ? "noopener noreferrer" : undefined}
-          class="text-[0.84rem] text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+          class="inline-flex items-center gap-0.5 text-[0.84rem] text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
         >
           {l.label}
+          {l.ext && (
+            <svg class="h-3 w-3 -translate-y-px opacity-40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7v9" />
+            </svg>
+          )}
         </a>
       ))}
       <a
@@ -45,7 +50,14 @@ const links = [
 
   <div id="mmenu" class="hidden border-t border-zinc-100 bg-white px-6 py-5 md:hidden dark:border-zinc-800 dark:bg-zinc-950">
     {links.map((l) => (
-      <a href={l.href} target={l.ext ? "_blank" : undefined} class="block py-2 text-sm text-zinc-600 dark:text-zinc-300">{l.label}</a>
+      <a href={l.href} target={l.ext ? "_blank" : undefined} class="flex items-center gap-0.5 py-2 text-sm text-zinc-600 dark:text-zinc-300">
+        {l.label}
+        {l.ext && (
+          <svg class="h-3 w-3 -translate-y-px opacity-40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H8M17 7v9" />
+          </svg>
+        )}
+      </a>
     ))}
     <a
       href="https://github.com/huohuastudio/novaix-releases/releases"
