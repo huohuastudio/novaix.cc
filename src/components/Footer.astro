@@ -17,12 +17,6 @@ const groups = [
     ],
   },
   {
-    title: "联系",
-    items: [
-      { label: "support@huohuastudio.com", href: "mailto:support@huohuastudio.com" },
-    ],
-  },
-  {
     title: "法律",
     items: [
       { label: "许可协议", href: "/license" },
@@ -35,7 +29,7 @@ const groups = [
 
 <footer class="bg-zinc-950 px-6 pb-10 pt-16 text-zinc-400">
   <div class="mx-auto max-w-6xl">
-    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_0.8fr]">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
       <div>
         <a href="/" class="flex items-center gap-2 font-display text-[0.95rem] font-bold text-white">
           <img src="/logo.svg" alt="" class="h-6 w-6" aria-hidden="true" />
@@ -69,8 +63,9 @@ const groups = [
       ))}
     </div>
 
-    <div class="mt-12 border-t border-zinc-800 pt-6 text-[0.75rem] text-zinc-600">
-      &copy; {new Date().getFullYear()} Spark Studio. All rights reserved.
+    <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-zinc-800 pt-6 text-[0.75rem] text-zinc-600 sm:flex-row">
+      <span>&copy; {new Date().getFullYear()} Spark Studio. All rights reserved.</span>
+      <a href="mailto:support@huohuastudio.com" class="transition-colors hover:text-zinc-400">support@huohuastudio.com</a>
     </div>
   </div>
 </footer>
