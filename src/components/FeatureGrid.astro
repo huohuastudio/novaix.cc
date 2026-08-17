@@ -1,28 +1,82 @@
 ---
-interface Props {
-  title?: string;
-  description?: string;
-  items: Array<{ title: string; description: string }>;
+interface FeatureGroup {
+  title: string;
+  items: Array<{ name: string; desc: string }>;
 }
 
-const { title, description, items } = Astro.props;
+const groups: FeatureGroup[] = [
+  {
+    title: "基础设施",
+    items: [
+      { name: "VPC 私有网络", desc: "基于 OVN 的 L2 隔离网络，子网划分与安全组" },
+      { name: "IP 池管理", desc: "IPv4/IPv6 灵活分配与回收，批量生成自动计算范围" },
+      { name: "共享 IP / NAT", desc: "普通与独享两种模式，用户可自助购买独立出口 IP" },
+      { name: "11 种 Linux 发行版", desc: "Ubuntu 到 NixOS，全面适配主流发行版" },
+      { name: "资源超开", desc: "CPU / 内存 / 磁盘独立超开比率，精细控制密度" },
+      { name: "动态内存", desc: "容器可利用宿主机空闲内存，提高整体利用率" },
+    ],
+  },
+  {
+    title: "用户运营",
+    items: [
+      { name: "CMS 内容管理", desc: "14 个子模块：公告/文章/帮助中心/FAQ/数据中心等" },
+      { name: "发票系统", desc: "用户自助申请发票，管理员审核录入，在线查看下载" },
+      { name: "广播通知", desc: "向所有用户或指定群组发送站内消息" },
+      { name: "优惠券", desc: "支持新购、续费、升级订单，灵活设置使用条件" },
+      { name: "代理分销", desc: "代理商分组，差异化返佣比例与分销折扣矩阵" },
+      { name: "SEO 支持", desc: "后台配置站点描述和关键词，服务端注入 meta 标签" },
+    ],
+  },
+  {
+    title: "运维工具",
+    items: [
+      { name: "在线更新", desc: "后台一键升级，自动备份和迁移，失败自动回滚" },
+      { name: "CLI 管理工具", desc: "命令行管理密码重置、插件、主题、设置和系统信息" },
+      { name: "任务大屏", desc: "统计卡片 / 多状态筛选 / 实时日志 / 自动刷新" },
+      { name: "告警通知", desc: "Telegram / 钉钉 / 企微 / Webhook 多渠道推送" },
+      { name: "操作日志", desc: "完整的操作审计追踪，按用户和类型筛选" },
+      { name: "节点监控", desc: "自动安装并启动监控采集程序，实时资源视图" },
+    ],
+  },
+  {
+    title: "开放集成",
+    items: [
+      { name: "Provisioning API", desc: "RESTful 开放接口，Swagger + Scalar 文档" },
+      { name: "Webhook 回调", desc: "实例操作和任务状态变更事件自动推送" },
+      { name: "前端源码开源", desc: "novaix-ui 独立仓库，社区可自由开发主题" },
+      { name: "三种数据库", desc: "SQLite 零配置 / MySQL 高并发 / PostgreSQL 可选" },
+      { name: "新手教程引导", desc: "管理后台和用户门户共 14 个引导场景" },
+      { name: "邮件服务", desc: "SMTP / Mailgun / Resend 三种发送渠道可选" },
+    ],
+  },
+];
 ---
 
-<section class="relative overflow-hidden bg-zinc-900 px-6 py-20 sm:py-28 dark:bg-zinc-950">
-  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(79,70,229,0.12),transparent)]"></div>
+<section class="px-6 py-20 sm:py-28">
   <div class="mx-auto max-w-6xl">
-    {(title || description) && (
-      <div class="mb-14" data-animate="blur">
-        {title && <h2 class="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">{title}</h2>}
-        {description && <p class="mt-3 max-w-lg text-zinc-400">{description}</p>}
-      </div>
-    )}
+    <div data-animate>
+      <h2 class="font-display text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50">
+        覆盖 IDC 运营全场景
+      </h2>
+      <p class="mt-3 text-zinc-500 dark:text-zinc-400">
+        从基础设施到用户运营，从运维工具到开放集成。
+      </p>
+    </div>
 
-    <div class="grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-      {items.map((item, i) => (
-        <div data-animate="up" style={`--stagger:${i * 0.06}s`}>
-          <h3 class="font-display text-[0.95rem] font-bold text-zinc-50">{item.title}</h3>
-          <p class="mt-2 text-[0.84rem] leading-relaxed text-zinc-400">{item.description}</p>
+    <div class="mt-12 grid gap-10 sm:grid-cols-2" data-animate style="--stagger:.1s">
+      {groups.map((group) => (
+        <div>
+          <h3 class="flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wider text-brand dark:text-brand-light">
+            {group.title}
+          </h3>
+          <div class="mt-5 space-y-4">
+            {group.items.map((item) => (
+              <div>
+                <div class="font-display text-[0.92rem] font-semibold text-zinc-800 dark:text-zinc-100">{item.name}</div>
+                <div class="mt-0.5 text-[0.84rem] leading-relaxed text-zinc-500 dark:text-zinc-400">{item.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
       ))}
     </div>

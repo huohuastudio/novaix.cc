@@ -2,19 +2,19 @@
 const faqs = [
   {
     q: "Novaix 是免费的吗？",
-    a: "Novaix 提供永久免费版，部署即用，无需注册。免费版包含实例管理、套餐计费、工单等核心功能，最多支持 2 个节点。如需不限节点、品牌定制、VPC 等高级功能，可在后台输入激活码升级为授权版。",
+    a: "Novaix 提供永久免费版，部署即用，无需注册。免费版包含实例管理、套餐计费、工单、CMS 等核心功能，最多支持 2 个节点。如需不限节点、HA 高可用、VPC、代理商等高级功能，可在后台输入激活码升级为授权版。",
   },
   {
     q: "支持哪些操作系统部署？",
-    a: "Novaix 编译为单个二进制文件，支持 Linux amd64 和 arm64 架构。推荐 Ubuntu 22.04+、Debian 12+ 或 CentOS 9+。",
+    a: "Novaix 编译为单个二进制文件，支持 Linux x86_64 和 ARM64 架构。推荐 Ubuntu 24.04+、Debian 12+ 或 CentOS 9+。计算节点支持 11 种 Linux 发行版（Ubuntu/Debian/CentOS/Rocky/Alma/Fedora/openSUSE/Alpine/NixOS/Void/Chimera）。",
   },
   {
     q: "默认使用 SQLite，性能够用吗？",
-    a: "对于中小规模（数百台实例以内），SQLite 完全够用且性能表现优秀。如果预期业务规模较大或需要高可用部署，建议在初始部署时就选择 MySQL。中途从 SQLite 迁移到 MySQL 需要借助第三方工具手动操作，没有内置的一键迁移功能，建议提前规划。",
+    a: "对于中小规模（数百台实例以内），SQLite 完全够用且性能表现优秀。如果预期业务规模较大或需要高可用部署，建议在初始部署时就选择 MySQL 或 PostgreSQL。中途从 SQLite 迁移需借助第三方工具手动操作，建议提前规划。",
   },
   {
     q: "底层使用什么虚拟化技术？",
-    a: "Novaix 支持 LXC 容器和 QEMU/KVM 虚拟机，通过统一的管理接口操作，无需关心底层差异。",
+    a: "Novaix 支持 LXC 容器和 QEMU/KVM 虚拟机，通过统一的管理接口操作，无需关心底层差异。也完整支持 Windows 虚拟机（TPM、双 ISO 挂载、密码重置、网络配置）。",
   },
   {
     q: "支持哪些支付方式？",
@@ -22,23 +22,23 @@ const faqs = [
   },
   {
     q: "数据安全如何保障？",
-    a: "SQLite 模式下，系统在每次在线更新前自动备份数据库文件。迁移失败会自动回滚到备份版本。MySQL 模式下建议配合定时备份策略。",
+    a: "SQLite 模式下，系统在每次在线更新前自动备份数据库文件，迁移失败会自动回滚。系统内置 40+ 项安全加固措施（HTTPS 强制、SSRF 防护、CSP 策略等）。MySQL/PostgreSQL 模式建议配合定时备份策略。",
   },
   {
     q: "可以自定义前端界面吗？",
-    a: "可以。Novaix 支持主题系统，前端源码完全开源。你可以基于默认主题二次开发，也可以从主题市场下载社区主题。",
+    a: "可以。Novaix 支持主题系统，前端源码完全开源（novaix-ui 仓库）。你可以基于默认主题二次开发，也可以从主题市场下载社区主题，热切换无需重启。",
   },
   {
-    q: "和 WHMCS / 魔方财务是什么关系？",
-    a: "Novaix 是独立的 IDC 管理系统，自带完整的用户前台和计费功能。如果你已有 WHMCS 或魔方财务，也可以通过集成模块对接，但大多数场景下无需额外的财务系统。",
+    q: "如何与已有系统集成？",
+    a: "Novaix 提供 Provisioning API 和 Webhook 回调接口，可与任何支持 HTTP 的系统对接。后台可配置集成方，管理回调地址和密钥。API 文档使用 Swagger + Scalar 自动生成。",
   },
   {
     q: "计算节点需要什么环境？",
-    a: "计算节点需要安装 Linux 操作系统（推荐 Ubuntu 22.04+ 或 Debian 12+），并配置好虚拟化环境。Novaix 管理端通过 API 远程管理计算节点，节点本身不需要安装 Novaix。具体配置步骤请参阅文档。",
+    a: "计算节点需安装 Linux 操作系统并配置好虚拟化环境。Novaix 管理端通过 API 远程管理计算节点，节点本身不需要安装 Novaix。首次接入时系统自动完成初始化配置。",
   },
   {
     q: "支持高可用部署吗？",
-    a: "支持。将同一节点组内的节点组成集群后，节点故障时实例会自动疏散到组内其他健康节点。高可用模式需要使用 MySQL 数据库，并部署多个 Novaix 实例。",
+    a: "支持。将同一节点组内的节点组成集群后，节点故障时实例会自动疏散到组内其他健康节点。高可用模式需使用 MySQL 或 PostgreSQL 数据库，并部署多个 Novaix 实例。",
   },
   {
     q: "和智简魔方、SolusVM、Virtualizor 有什么区别？",
@@ -56,7 +56,7 @@ const faqs = [
     <div class="mt-10 divide-y divide-zinc-200 dark:divide-zinc-700" data-animate style="--stagger:.1s">
       {faqs.map((faq) => (
         <details class="group">
-          <summary class="flex cursor-pointer items-center justify-between py-5 text-[0.95rem] font-medium text-zinc-900 transition-colors hover:text-accent [&::-webkit-details-marker]:hidden dark:text-zinc-50">
+          <summary class="flex cursor-pointer items-center justify-between py-5 text-[0.95rem] font-medium text-zinc-900 transition-colors hover:text-brand [&::-webkit-details-marker]:hidden dark:text-zinc-50">
             {faq.q}
             <svg
               class="h-5 w-5 shrink-0 text-zinc-400 transition-transform group-open:rotate-45 dark:text-zinc-500"

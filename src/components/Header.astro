@@ -1,17 +1,24 @@
 ---
+interface Props {
+  variant?: "dark" | "light";
+}
+const { variant = "dark" } = Astro.props;
+const isDark = variant === "dark";
+
+const isHome = Astro.url.pathname === "/";
 const links = [
-  { label: "功能", href: "#features" },
-  { label: "部署", href: "#deploy" },
-  { label: "价格", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
+  { label: "功能", href: isHome ? "#features" : "/#features" },
+  { label: "部署", href: isHome ? "#deploy" : "/#deploy" },
+  { label: "价格", href: isHome ? "#pricing" : "/#pricing" },
+  { label: "FAQ", href: isHome ? "#faq" : "/#faq" },
   { label: "文档", href: "https://docs.huohuastudio.com/novaix", ext: true },
   { label: "GitHub", href: "https://github.com/huohuastudio/novaix-releases", ext: true },
 ];
 ---
 
-<header id="hdr" class="fixed top-0 z-50 w-full transition-[background,box-shadow] duration-300">
+<header id="hdr" class="fixed top-0 z-50 w-full transition-[background,box-shadow] duration-300" data-variant={variant}>
   <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-    <a href="/" class="flex items-center gap-2 font-display text-[1.05rem] font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+    <a href="/" class:list={["flex items-center gap-2 font-display text-[1.05rem] font-bold tracking-tight", isDark ? "text-white" : "text-zinc-900 dark:text-white"]}>
       <img src="/logo.svg" alt="" class="h-7 w-7" aria-hidden="true" />
       Novaix
     </a>
@@ -22,7 +29,7 @@ const links = [
           href={l.href}
           target={l.ext ? "_blank" : undefined}
           rel={l.ext ? "noopener noreferrer" : undefined}
-          class="inline-flex items-center gap-0.5 text-[0.84rem] text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+          class:list={["hdr-link inline-flex items-center gap-0.5 text-[0.84rem] transition-colors", isDark ? "text-slate-300/70 hover:text-white" : "text-zinc-500 hover:text-zinc-900 dark:text-slate-300/70 dark:hover:text-white"]}
         >
           {l.label}
           {l.ext && (
@@ -36,22 +43,22 @@ const links = [
         href="https://github.com/huohuastudio/novaix-releases/releases"
         target="_blank"
         rel="noopener noreferrer"
-        class="rounded-lg bg-zinc-900 px-4 py-1.5 text-[0.84rem] font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+        class:list={["rounded-lg px-4 py-1.5 text-[0.84rem] font-medium transition-colors", isDark ? "bg-white/10 text-white backdrop-blur-sm hover:bg-white/20" : "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white/10 dark:hover:bg-white/20"]}
       >
         下载
       </a>
     </nav>
 
     <button id="mbtn" class="md:hidden" aria-label="菜单">
-      <svg class="h-5 w-5 text-zinc-600 dark:text-zinc-300" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+      <svg class:list={["h-5 w-5", isDark ? "text-slate-300" : "text-zinc-600 dark:text-slate-300"]} fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
         <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
       </svg>
     </button>
   </div>
 
-  <div id="mmenu" class="hidden border-t border-zinc-100 bg-white px-6 py-5 md:hidden dark:border-zinc-800 dark:bg-zinc-950">
+  <div id="mmenu" class:list={["hidden border-t px-6 py-5 backdrop-blur-xl md:hidden", isDark ? "border-white/10 bg-depth/95" : "border-zinc-100 bg-white/95 dark:border-white/10 dark:bg-depth/95"]}>
     {links.map((l) => (
-      <a href={l.href} target={l.ext ? "_blank" : undefined} class="flex items-center gap-0.5 py-2 text-sm text-zinc-600 dark:text-zinc-300">
+      <a href={l.href} target={l.ext ? "_blank" : undefined} class:list={["flex items-center gap-0.5 py-2 text-sm", isDark ? "text-slate-300" : "text-zinc-600 dark:text-slate-300"]}>
         {l.label}
         {l.ext && (
           <svg class="h-3 w-3 -translate-y-px opacity-40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -63,7 +70,7 @@ const links = [
     <a
       href="https://github.com/huohuastudio/novaix-releases/releases"
       target="_blank"
-      class="mt-3 block rounded-lg bg-zinc-900 py-2 text-center text-sm font-medium text-white dark:bg-white dark:text-zinc-900"
+      class:list={["mt-3 block rounded-lg py-2 text-center text-sm font-medium", isDark ? "bg-white/10 text-white" : "bg-zinc-900 text-white dark:bg-white/10"]}
     >
       下载
     </a>
@@ -75,19 +82,29 @@ const links = [
   const mbtn = document.getElementById("mbtn")!;
   const mmenu = document.getElementById("mmenu")!;
 
-  let prev = false;
+  const variant = hdr.dataset.variant;
+  const isLight = variant === "light";
+  const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  let scrolled = false;
   const onScroll = () => {
     const now = scrollY > 16;
-    if (now === prev) return;
-    prev = now;
-    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    hdr.style.backgroundColor = now ? (isDark ? "rgba(9,9,11,.82)" : "rgba(255,255,255,.82)") : "";
-    hdr.style.backdropFilter = now ? "blur(16px)" : "";
-    hdr.style.webkitBackdropFilter = now ? "blur(16px)" : "";
-    hdr.style.boxShadow = now ? (isDark ? "0 1px 2px rgba(0,0,0,.2)" : "0 1px 2px rgba(0,0,0,.04)") : "";
+    if (now === scrolled) return;
+    scrolled = now;
+    if (now) {
+      const useDark = !isLight || isDarkMode;
+      hdr.style.backgroundColor = useDark ? "rgba(15,23,42,0.85)" : "rgba(255,255,255,0.85)";
+      hdr.style.backdropFilter = "blur(16px) saturate(1.2)";
+      hdr.style.webkitBackdropFilter = "blur(16px) saturate(1.2)";
+      hdr.style.boxShadow = useDark ? "0 1px 2px rgba(0,0,0,.2)" : "0 1px 2px rgba(0,0,0,.06)";
+    } else {
+      hdr.style.backgroundColor = "";
+      hdr.style.backdropFilter = "";
+      hdr.style.webkitBackdropFilter = "";
+      hdr.style.boxShadow = "";
+    }
   };
   addEventListener("scroll", onScroll, { passive: true });
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { prev = false; onScroll(); });
   onScroll();
 
   mbtn.onclick = () => mmenu.classList.toggle("hidden");

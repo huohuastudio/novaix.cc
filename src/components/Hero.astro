@@ -1,68 +1,75 @@
-<section class="relative overflow-hidden pb-0 pt-28 sm:pt-36 lg:min-h-[92vh] lg:pt-40">
-  <div class="grid-bg pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_50%_at_50%_40%,black_40%,transparent_100%)]"></div>
+---
+import WaveGrid from "./bg/WaveGrid.astro";
 
-  <div class="relative z-10 mx-auto max-w-6xl px-6">
-    <div class="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
+const stats = [
+  { value: "30+", label: "扩展插件" },
+  { value: "14", label: "CMS 模块" },
+  { value: "11", label: "Linux 发行版" },
+  { value: "3", label: "数据库引擎" },
+];
+---
 
-      <div>
-        <h1 class="font-display text-[2.6rem] font-bold leading-[1.12] tracking-tight text-zinc-900 sm:text-5xl lg:text-[3.5rem] dark:text-zinc-50" data-animate style="--stagger:.06s">
-          让云主机销售<br/>简单高效。
-        </h1>
+<section class="relative flex min-h-screen flex-col overflow-hidden bg-depth">
+  <WaveGrid />
 
-        <p class="mt-5 max-w-[26rem] text-[1.05rem] leading-relaxed text-zinc-500 dark:text-zinc-400" data-animate style="--stagger:.12s">
-          面向中小型 VPS 服务商的 IDC 管理系统。单文件部署，开箱即用，从节点管理到计费订单全覆盖。
-        </p>
+  <!-- 渐变覆盖层 -->
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,transparent_20%,rgba(15,23,42,0.6)_100%)]"></div>
+  <div class="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-depth to-transparent"></div>
 
-        <div class="mt-8 flex flex-wrap gap-3" data-animate style="--stagger:.18s">
-          <a
-            href="https://github.com/huohuastudio/novaix-releases/releases"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-light"
-          >
-            下载安装
-            <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-          </a>
-          <a
-            href="https://docs.huohuastudio.com/novaix"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
-          >
-            阅读文档
-          </a>
-        </div>
-      </div>
+  <!-- 内容 -->
+  <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pt-32 pb-20 text-center">
+    <h1 class="font-display text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-[3.8rem] lg:leading-[1.1]">
+      一个文件<br class="sm:hidden" />，完整的主机销售平台
+    </h1>
 
-      <!-- 产品截图 -->
-      <div data-animate style="--stagger:.15s">
-        <div class="hero-visual rounded-2xl border border-zinc-200/80 bg-white p-1 ring-1 ring-zinc-100/50 dark:border-zinc-700/80 dark:bg-zinc-900 dark:ring-zinc-800/50">
-          <div class="flex items-center gap-1.5 px-3.5 py-2.5">
-            <span class="h-[9px] w-[9px] rounded-full bg-[#ff5f57]"></span>
-            <span class="h-[9px] w-[9px] rounded-full bg-[#febc2e]"></span>
-            <span class="h-[9px] w-[9px] rounded-full bg-[#28c840]"></span>
-          </div>
-          <div class="overflow-hidden rounded-b-xl">
-            <img
-              src="/screenshots/dashboard-full.webp"
-              alt="Novaix 管理后台"
-              class="aspect-[16/10] w-full bg-zinc-50 object-cover object-top dark:bg-zinc-800"
-              loading="eager"
-            />
-          </div>
-        </div>
-      </div>
+    <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-300/80">
+      面向中小型 VPS 服务商的 IDC 管理系统。<br class="hidden sm:inline" />
+      单二进制部署，内置数据库，开箱即用。
+    </p>
+
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+      <a
+        href="https://github.com/huohuastudio/novaix-releases/releases"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group inline-flex items-center gap-2 rounded-xl bg-brand px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
+      >
+        下载安装
+        <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </a>
+      <a
+        href="https://docs.huohuastudio.com/novaix"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 rounded-xl border border-white/15 px-7 py-3 text-sm font-medium text-slate-200 transition-all hover:border-white/30 hover:bg-white/5"
+      >
+        阅读文档
+      </a>
     </div>
   </div>
 
-  <div class="relative z-10 mt-16 border-t border-zinc-100 dark:border-zinc-800">
-    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-4 px-6 py-6" data-animate style="--stagger:.3s">
-      {["单文件部署", "SQLite 零依赖", "内置完整计费", "容器 + 虚拟机双模", "插件化架构"].map((label) => (
-        <div class="flex items-center gap-2.5 text-sm text-zinc-400 dark:text-zinc-500">
-          <span class="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
-          {label}
+  <!-- 统计数据栏 -->
+  <div class="relative z-10 border-t border-white/[0.06]">
+    <div class="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-12 gap-y-4 px-6 py-6 sm:justify-between">
+      {stats.map((s) => (
+        <div class="flex items-baseline gap-2">
+          <span class="font-display text-2xl font-bold text-white">{s.value}</span>
+          <span class="text-sm text-slate-400">{s.label}</span>
         </div>
       ))}
     </div>
+  </div>
+
+  <!-- Dashboard 截图预览 -->
+  <div class="relative z-10 mx-auto w-full max-w-5xl px-6 pb-0">
+    <div class="shadow-2xl shadow-black/30">
+      <img
+        src="https://raw.githubusercontent.com/huohuastudio/novaix-releases/main/screenshots/dashboard.png"
+        alt="Novaix 管理后台"
+        class="w-full bg-slate-800"
+        loading="eager"
+      />
+    </div>
+    <div class="pointer-events-none h-20 bg-gradient-to-t from-depth to-transparent"></div>
   </div>
 </section>

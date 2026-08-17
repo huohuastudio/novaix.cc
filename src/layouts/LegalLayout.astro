@@ -14,7 +14,7 @@ const description = Astro.props.frontmatter?.description ?? Astro.props.descript
 ---
 
 <Layout title={`${title} — Novaix`} description={description}>
-  <Header />
+  <Header variant="light" />
   <main class="px-6 pb-20 pt-32 sm:pt-36">
     <article class="legal-content mx-auto max-w-3xl">
       <slot />

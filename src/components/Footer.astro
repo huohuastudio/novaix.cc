@@ -3,9 +3,10 @@ const groups = [
   {
     title: "产品",
     items: [
-      { label: "功能特性", href: "#features" },
+      { label: "功能特性", href: "/#features" },
       { label: "更新日志", href: "https://github.com/huohuastudio/novaix-releases/releases" },
       { label: "主题市场", href: "https://github.com/huohuastudio/novaix-releases#主题市场" },
+      { label: "插件市场", href: "https://github.com/huohuastudio/novaix-releases#插件" },
     ],
   },
   {
@@ -13,6 +14,7 @@ const groups = [
     items: [
       { label: "文档", href: "https://docs.huohuastudio.com/novaix" },
       { label: "GitHub", href: "https://github.com/huohuastudio/novaix-releases" },
+      { label: "前端源码", href: "https://github.com/huohuastudio/novaix-ui" },
       { label: "提交 Issue", href: "https://github.com/huohuastudio/novaix-releases/issues" },
     ],
   },
@@ -27,7 +29,7 @@ const groups = [
 ];
 ---
 
-<footer class="bg-zinc-950 px-6 pb-10 pt-16 text-zinc-400">
+<footer class="bg-depth px-6 pb-10 pt-16 text-slate-400">
   <div class="mx-auto max-w-6xl">
     <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
       <div>
@@ -44,13 +46,13 @@ const groups = [
 
       {groups.map((g) => (
         <div>
-          <h4 class="text-[0.8rem] font-semibold uppercase tracking-wider text-zinc-500">{g.title}</h4>
+          <h4 class="text-[0.8rem] font-semibold uppercase tracking-wider text-slate-500">{g.title}</h4>
           <ul class="mt-3 space-y-2">
             {g.items.map((item) => (
               <li>
                 <a
                   href={item.href}
-                  target={item.href.startsWith("http") || item.href.startsWith("mailto") ? "_blank" : undefined}
+                  target={item.href.startsWith("http") ? "_blank" : undefined}
                   rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                   class="text-sm transition-colors hover:text-white"
                 >
@@ -63,7 +65,7 @@ const groups = [
       ))}
     </div>
 
-    <div class="mt-12 border-t border-zinc-800 pt-6 text-[0.75rem] text-zinc-600">
+    <div class="mt-12 border-t border-white/[0.06] pt-6 text-[0.75rem] text-slate-600">
       &copy; {new Date().getFullYear()} Spark Studio. All rights reserved.
     </div>
   </div>

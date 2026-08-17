@@ -1,0 +1,166 @@
+---
+interface Tab {
+  id: string;
+  label: string;
+  title: string;
+  description: string;
+  features: string[];
+  image: string;
+  imageAlt: string;
+}
+
+const tabs: Tab[] = [
+  {
+    id: "instances",
+    label: "实例管理",
+    title: "实例全生命周期管理",
+    description: "容器与虚拟机统一管控，从创建到销毁的每个环节都有对应操作。支持 Linux 和 Windows，NAT 与独立 IP 自由选择。",
+    features: [
+      "启停、重装、快照、重置密码、VNC 控制台",
+      "批量创建实例，一次下单开通多台",
+      "升级/降级套餐，端口转发与防火墙",
+      "Windows 完整支持（TPM/ISO 双挂载/密码重置）",
+      "SSE 实时任务追踪，操作状态自动刷新",
+    ],
+    image: "/screenshots/instance-detail.webp",
+    imageAlt: "实例详情页面",
+  },
+  {
+    id: "billing",
+    label: "商业运营",
+    title: "完整的商业闭环",
+    description: "从套餐定价到收款发票，一套系统覆盖 VPS 销售的全部商业环节。代理分销体系帮你快速建立分销网络。",
+    features: [
+      "月付/季付/年付/小时计费，自动扣费与暂停",
+      "多支付渠道，插件化扩展更多网关",
+      "发票系统，用户自助申请，管理员审核",
+      "工单系统，部门分类 / 指派 / SLA 时限",
+      "代理分销，差异化返佣与折扣矩阵",
+    ],
+    image: "/screenshots/billing.webp",
+    imageAlt: "订单管理界面",
+  },
+  {
+    id: "ops",
+    label: "运维监控",
+    title: "企业级运维能力",
+    description: "多节点统一管理，实时监控资源使用。HA 高可用确保业务零中断，仪表盘一眼掌握全局态势。",
+    features: [
+      "多节点接入与实时监控，自动安装采集程序",
+      "节点组集群，在线热迁移",
+      "HA 高可用，节点故障自动疏散实例",
+      "资源超开（CPU/内存/磁盘独立比率）",
+      "仪表盘：世界地图、趋势图、资源进度条",
+    ],
+    image: "/screenshots/dashboard-full.webp",
+    imageAlt: "管理仪表盘",
+  },
+  {
+    id: "security",
+    label: "安全认证",
+    title: "多层安全防护",
+    description: "从用户登录到敏感操作，每一步都有对应的安全策略。内置多种认证方式，40+ 项安全加固措施。",
+    features: [
+      "TOTP 两步验证，敏感操作二次确认",
+      "社交登录（GitHub/Google/微信/OIDC + 插件扩展）",
+      "实名认证（身份核验 + H5 人脸识别）",
+      "人机验证（极验/reCAPTCHA/hCaptcha/Turnstile）",
+      "HTTPS 强制、SSRF 防护、CSP 策略等 40+ 安全加固",
+    ],
+    image: "/screenshots/users.webp",
+    imageAlt: "用户管理界面",
+  },
+  {
+    id: "extend",
+    label: "扩展生态",
+    title: "开放与可扩展",
+    description: "插件系统覆盖支付、短信、邮件、认证、通知五大类。主题热切换无需重启，前端源码完全开源。",
+    features: [
+      "JS 插件引擎，一键安装/热重载/导出打包",
+      "主题市场，社区主题一键安装和切换",
+      "CMS 内容管理，14 个子模块覆盖运营所需",
+      "Provisioning API + Webhook 开放集成",
+      "CLI 管理工具，终端直接运维",
+    ],
+    image: "/screenshots/plugins.webp",
+    imageAlt: "插件管理界面",
+  },
+];
+---
+
+<section id="features" class="px-6 py-20 sm:py-28">
+  <div class="mx-auto max-w-6xl">
+    <div data-animate>
+      <h2 class="font-display text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50">
+        产品能力
+      </h2>
+      <p class="mt-3 max-w-lg text-zinc-500 dark:text-zinc-400">
+        从实例管理到商业运营，从安全认证到生态扩展，覆盖 IDC 运营全链路。
+      </p>
+    </div>
+
+    <!-- Tab 导航 -->
+    <div class="mt-10 flex gap-1 overflow-x-auto rounded-xl border border-zinc-200/80 bg-zinc-50 p-1 dark:border-zinc-700/80 dark:bg-zinc-900" data-animate style="--stagger:.1s">
+      {tabs.map((tab, i) => (
+        <button
+          data-tab={tab.id}
+          data-active={i === 0 ? "" : undefined}
+          class="tour-tab shrink-0 rounded-lg px-5 py-2.5 text-sm font-medium text-zinc-500 transition-all hover:text-zinc-700 data-[active]:bg-white data-[active]:text-zinc-900 data-[active]:shadow-sm dark:text-zinc-400 dark:hover:text-zinc-200 dark:data-[active]:bg-zinc-800 dark:data-[active]:text-zinc-50"
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+
+    <!-- Tab 内容 -->
+    <div class="mt-8" data-animate style="--stagger:.15s">
+      {tabs.map((tab, i) => (
+        <div
+          data-panel={tab.id}
+          class:list={[
+            "tour-panel grid items-center gap-10 lg:grid-cols-[1fr_1.3fr] lg:gap-14",
+            i !== 0 && "hidden",
+          ]}
+        >
+          <div>
+            <h3 class="font-display text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{tab.title}</h3>
+            <p class="mt-3 leading-relaxed text-zinc-500 dark:text-zinc-400">{tab.description}</p>
+            <ul class="mt-6 space-y-3">
+              {tab.features.map((f) => (
+                <li class="flex items-start gap-3 text-[0.9rem] text-zinc-600 dark:text-zinc-300">
+                  <svg class="mt-[3px] h-4 w-4 shrink-0 text-brand" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div class="magnify overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-50 shadow-lg dark:border-zinc-700/80 dark:bg-zinc-800">
+              <img src={tab.image} alt={tab.imageAlt} class="w-full object-cover object-top" loading="lazy" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  const tabBtns = document.querySelectorAll<HTMLButtonElement>(".tour-tab");
+  const panels = document.querySelectorAll<HTMLDivElement>(".tour-panel");
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.tab;
+      tabBtns.forEach((b) => {
+        if (b.dataset.tab === id) b.setAttribute("data-active", "");
+        else b.removeAttribute("data-active");
+      });
+      panels.forEach((p) => {
+        p.classList.toggle("hidden", p.dataset.panel !== id);
+      });
+    });
+  });
+</script>
