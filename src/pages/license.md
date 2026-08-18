@@ -1,7 +1,7 @@
 ---
 layout: ../layouts/LegalLayout.astro
 title: 最终用户许可协议
-description: Novaix 最终用户许可协议（EULA）
+description: 查阅 Novaix IDC 管理系统的最终用户许可协议（EULA），了解软件使用条款和授权范围。
 ---
 
 # 最终用户许可协议

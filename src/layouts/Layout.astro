@@ -10,6 +10,8 @@ const {
   title = "Novaix — 商业化 IDC 管理系统",
   description = "面向中小型 VPS 服务商的一站式 IDC 管理系统。单文件部署，开箱即用。",
 } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, "https://novaix.cc").href;
 ---
 
 <!doctype html>
@@ -17,18 +19,31 @@ const {
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <meta name="keywords" content="VPS管理系统,IDC管理,主机销售系统,服务器管理,虚拟化管理面板,云主机管理,VPS面板,主机商系统" />
+    <meta name="author" content="Spark Studio" />
     <meta name="theme-color" content="#0f172a" />
+
+    <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://novaix.cc" />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content="https://novaix.cc/og-image.png" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:site_name" content="Novaix" />
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <link rel="canonical" href="https://novaix.cc" />
+    <meta name="twitter:image" content="https://novaix.cc/og-image.png" />
+
+    <link rel="canonical" href={canonicalURL} />
+
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QK0XF8CE4M"></script>
     <script is:inline>
       window.dataLayer = window.dataLayer || [];

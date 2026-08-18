@@ -1,7 +1,7 @@
 ---
 layout: ../layouts/LegalLayout.astro
 title: 服务条款
-description: Novaix 服务条款
+description: Novaix IDC 管理系统的服务条款，包含使用规范、责任限制和争议解决等内容。
 ---
 
 # 服务条款

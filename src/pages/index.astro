@@ -11,6 +11,45 @@ import Testimonials from "../components/Testimonials.astro";
 import FAQ from "../components/FAQ.astro";
 import CTA from "../components/CTA.astro";
 import Footer from "../components/Footer.astro";
+
+const organizationLD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Spark Studio",
+  url: "https://novaix.cc",
+  logo: "https://novaix.cc/favicon.svg",
+  sameAs: [
+    "https://github.com/huohuastudio/novaix-releases",
+  ],
+};
+
+const productLD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Novaix",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Linux",
+  description: "面向中小型 VPS 服务商的一站式 IDC 管理系统。单文件部署，内置数据库，开箱即用。支持容器与虚拟机统一管理、完整计费体系、插件化扩展。",
+  url: "https://novaix.cc",
+  image: "https://novaix.cc/og-image.png",
+  author: { "@type": "Organization", name: "Spark Studio" },
+  offers: [
+    { "@type": "Offer", price: "0", priceCurrency: "CNY", description: "免费版，最多 2 个节点" },
+    { "@type": "Offer", price: "", priceCurrency: "CNY", description: "授权版，解锁全部功能" },
+  ],
+};
+
+const faqLD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    { "@type": "Question", name: "Novaix 是免费的吗？", acceptedAnswer: { "@type": "Answer", text: "Novaix 提供永久免费版，部署即用，无需注册。免费版包含实例管理、套餐计费、工单、CMS 等核心功能，最多支持 2 个节点。" }},
+    { "@type": "Question", name: "支持哪些操作系统部署？", acceptedAnswer: { "@type": "Answer", text: "Novaix 编译为单个二进制文件，支持 Linux x86_64 和 ARM64 架构。推荐 Ubuntu 24.04+、Debian 12+ 或 CentOS 9+。计算节点支持 11 种 Linux 发行版。" }},
+    { "@type": "Question", name: "底层使用什么虚拟化技术？", acceptedAnswer: { "@type": "Answer", text: "Novaix 支持 LXC 容器和 QEMU/KVM 虚拟机，通过统一的管理接口操作。也完整支持 Windows 虚拟机。" }},
+    { "@type": "Question", name: "默认使用 SQLite，性能够用吗？", acceptedAnswer: { "@type": "Answer", text: "对于中小规模（数百台实例以内），SQLite 完全够用。如需更大规模或高可用部署，建议选择 MySQL 或 PostgreSQL。" }},
+    { "@type": "Question", name: "支持高可用部署吗？", acceptedAnswer: { "@type": "Answer", text: "支持。节点组集群内节点故障时，实例会自动疏散到健康节点。高可用模式需使用 MySQL 或 PostgreSQL 并部署多个 Novaix 实例。" }},
+  ],
+};
 ---
 
 <Layout>
@@ -27,4 +66,8 @@ import Footer from "../components/Footer.astro";
     <CTA />
   </main>
   <Footer />
+
+  <script type="application/ld+json" set:html={JSON.stringify(organizationLD)} />
+  <script type="application/ld+json" set:html={JSON.stringify(productLD)} />
+  <script type="application/ld+json" set:html={JSON.stringify(faqLD)} />
 </Layout>

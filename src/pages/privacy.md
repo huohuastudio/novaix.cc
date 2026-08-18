@@ -1,7 +1,7 @@
 ---
 layout: ../layouts/LegalLayout.astro
 title: 隐私政策
-description: Novaix 隐私政策
+description: Novaix IDC 管理系统的隐私政策，说明数据收集、使用和保护方式。
 ---
 
 # 隐私政策
