@@ -15,51 +15,50 @@ const platforms = [
   "Fedora", "openSUSE", "Alpine", "NixOS", "Void", "Chimera",
 ];
 ---
-
-<section id="deploy" class="overflow-hidden bg-depth px-6 py-20 sm:py-28">
-  <div class="mx-auto max-w-6xl">
+<section id="deploy" class="relative overflow-hidden border-t border-white/[0.06] bg-depth px-6 text-slate-300 py-20 sm:py-28">
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_15%_40%,rgba(47,107,255,0.12),transparent)]"></div>
+  <div class="relative mx-auto max-w-6xl">
     <div class="grid items-start gap-12 lg:grid-cols-2 lg:gap-20">
 
       <!-- 左侧：终端 + 说明 -->
       <div>
-        <p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-brand-light" data-animate>Deploy</p>
-        <h2 class="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl" data-animate style="--stagger:.06s">
+        <h2 class="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl" data-animate>
           一个二进制，装下所有
         </h2>
-        <p class="mt-4 max-w-lg text-slate-400" data-animate style="--stagger:.12s">
+        <p class="mt-3 max-w-lg text-slate-400" data-animate style="--stagger:.06s">
           Go + React 编译为单个可执行文件。不需要 Docker，不需要 Nginx，不需要 Node.js。下载、运行，就这么简单。
         </p>
 
         <!-- 终端 -->
-        <div class="mt-8 overflow-hidden rounded-2xl bg-slate-900 ring-1 ring-white/10" data-animate="left" style="--stagger:.18s">
+        <div class="mt-8 overflow-hidden rounded-lg bg-panel ring-1 ring-white/10" data-animate style="--stagger:.12s">
           <div class="flex items-center gap-1.5 border-b border-white/[0.06] px-5 py-3">
-            <span class="h-[10px] w-[10px] rounded-full bg-[#ff5f57]/70"></span>
-            <span class="h-[10px] w-[10px] rounded-full bg-[#febc2e]/70"></span>
-            <span class="h-[10px] w-[10px] rounded-full bg-[#28c840]/70"></span>
-            <span class="ml-4 font-mono text-[0.7rem] text-slate-500">Terminal</span>
+            <span class="h-[10px] w-[10px] rounded-full bg-white/15"></span>
+            <span class="h-[10px] w-[10px] rounded-full bg-white/15"></span>
+            <span class="h-[10px] w-[10px] rounded-full bg-white/15"></span>
+            <span class="ml-4 font-mono text-[0.7rem] text-slate-500">终端</span>
           </div>
           <div class="space-y-4 break-all p-6 font-mono text-[0.82rem] leading-relaxed">
             <div>
               <div class="text-slate-500"># 下载</div>
               <div class="text-slate-200">
-                <span class="text-emerald-400">$</span> wget https://github.com/huohuastudio/novaix-releases/releases/latest/download/<wbr/>novaix_linux_amd64.tar.gz
+                <span class="text-glow">$</span> wget https://github.com/huohuastudio/novaix-releases/releases/latest/download/<wbr/>novaix_linux_amd64.tar.gz
               </div>
             </div>
             <div>
               <div class="text-slate-500"># 解压</div>
               <div class="text-slate-200">
-                <span class="text-emerald-400">$</span> tar -xzf novaix_linux_amd64.tar.gz
+                <span class="text-glow">$</span> tar -xzf novaix_linux_amd64.tar.gz
               </div>
             </div>
             <div>
               <div class="text-slate-500"># 启动</div>
               <div class="text-slate-200">
-                <span class="text-emerald-400">$</span> ./novaix_linux_amd64/novaix
+                <span class="text-glow">$</span> ./novaix_linux_amd64/novaix
               </div>
               <div class="mt-1 space-y-0.5 text-slate-400">
-                <div><span class="text-slate-500">15:04:05</span> <span class="text-cyan-400">INF</span> Novaix 启动中 <span class="text-slate-500">version=</span>v1.6.0</div>
-                <div><span class="text-slate-500">15:04:05</span> <span class="text-cyan-400">INF</span> 插件加载完成 <span class="text-slate-500">total=</span>12 <span class="text-slate-500">valid=</span>12</div>
-                <div><span class="text-slate-500">15:04:05</span> <span class="text-cyan-400">INF</span> 服务器启动中 <span class="text-slate-500">addr=</span>:8080</div>
+                <div><span class="text-slate-500">15:04:05</span> <span class="text-signal">INF</span> Novaix 启动中 <span class="text-slate-500">version=</span>v1.6.0</div>
+                <div><span class="text-slate-500">15:04:05</span> <span class="text-signal">INF</span> 插件加载完成 <span class="text-slate-500">total=</span>12 <span class="text-slate-500">valid=</span>12</div>
+                <div><span class="text-slate-500">15:04:05</span> <span class="text-signal">INF</span> 服务器启动中 <span class="text-slate-500">addr=</span>:8080</div>
               </div>
             </div>
           </div>
@@ -67,38 +66,38 @@ const platforms = [
       </div>
 
       <!-- 右侧：二进制组成 + 平台支持 -->
-      <div class="space-y-10">
+      <div class="divide-y divide-white/[0.06]" data-animate style="--stagger:.1s">
         <!-- 体积对比 -->
-        <div data-animate="right" style="--stagger:.1s">
-          <h3 class="text-sm font-semibold text-slate-300">体积对比</h3>
+        <div class="pb-8">
+          <h3 class="text-sm font-semibold text-white">体积对比</h3>
           <div class="mt-4 space-y-3">
             <div>
               <div class="mb-1.5 flex items-center justify-between text-xs text-slate-400">
                 <span>传统方案</span>
                 <span>Nginx + Node.js + Database + ...</span>
               </div>
-              <div class="h-3 rounded-full bg-slate-800">
-                <div class="h-full w-full rounded-full bg-gradient-to-r from-slate-600 to-slate-500"></div>
+              <div class="h-2 rounded-sm bg-white/[0.06]">
+                <div class="h-full w-full rounded-sm bg-slate-600"></div>
               </div>
             </div>
             <div>
               <div class="mb-1.5 flex items-center justify-between text-xs text-slate-400">
                 <span>Novaix</span>
-                <span class="text-brand-light">~30MB 单文件</span>
+                <span class="text-glow">~30MB 单文件</span>
               </div>
-              <div class="h-3 rounded-full bg-slate-800">
-                <div class="h-full w-[15%] rounded-full bg-gradient-to-r from-brand to-brand-light"></div>
+              <div class="h-2 rounded-sm bg-white/[0.06]">
+                <div class="h-full w-[15%] rounded-sm bg-glow shadow-[0_0_12px_var(--color-glow)]"></div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 包含组件 -->
-        <div data-animate="right" style="--stagger:.2s">
-          <h3 class="text-sm font-semibold text-slate-300">一个文件包含</h3>
+        <div class="py-8">
+          <h3 class="text-sm font-semibold text-white">一个文件包含</h3>
           <div class="mt-4 flex flex-wrap gap-2">
             {components.map((c) => (
-              <span class="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs text-slate-300">
+              <span class="rounded-md border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-slate-300">
                 {c}
               </span>
             ))}
@@ -106,28 +105,28 @@ const platforms = [
         </div>
 
         <!-- 支持平台 -->
-        <div data-animate="right" style="--stagger:.3s">
-          <h3 class="text-sm font-semibold text-slate-300">节点操作系统</h3>
+        <div class="py-8">
+          <h3 class="text-sm font-semibold text-white">节点操作系统</h3>
           <div class="mt-4 flex flex-wrap gap-2">
             {platforms.map((p) => (
-              <span class="rounded-md bg-white/[0.06] px-2.5 py-1 text-xs text-slate-400">{p}</span>
+              <span class="rounded-md border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-slate-300">{p}</span>
             ))}
           </div>
-          <div class="mt-4 flex items-center gap-4 text-xs text-slate-500">
-            <span class="flex items-center gap-1.5">
-              <span class="inline-block h-1.5 w-1.5 rounded-full bg-signal"></span>
+          <div class="mt-4 flex items-center gap-5 text-xs text-slate-400">
+            <span class="flex items-center gap-2">
+              <span class="led led-signal"></span>
               x86_64
             </span>
-            <span class="flex items-center gap-1.5">
-              <span class="inline-block h-1.5 w-1.5 rounded-full bg-signal"></span>
+            <span class="flex items-center gap-2">
+              <span class="led led-signal"></span>
               ARM64
             </span>
           </div>
         </div>
 
         <!-- 在线更新 -->
-        <div data-animate="right" style="--stagger:.4s">
-          <h3 class="text-sm font-semibold text-slate-300">在线更新</h3>
+        <div class="pt-8">
+          <h3 class="text-sm font-semibold text-white">在线更新</h3>
           <p class="mt-2 text-sm leading-relaxed text-slate-400">
             后台一键升级，自动备份、迁移、替换。SQLite 迁移失败自动回滚。支持 MySQL 和 PostgreSQL。
           </p>

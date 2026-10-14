@@ -1,18 +1,21 @@
-<section class="relative overflow-hidden bg-depth px-6 py-20 sm:py-28">
-  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(99,102,241,0.15),transparent)]"></div>
-  <div class="relative mx-auto max-w-6xl">
+<section class="relative overflow-hidden border-t border-white/[0.06] bg-depth px-6 pt-24 text-slate-300 pb-40 sm:pt-32 sm:pb-52">
+  <!-- 透视地面，呼应首屏的机房走廊 -->
+  <div class="cta-floor" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute inset-x-0 bottom-[30%] mx-auto h-32 max-w-4xl rounded-[100%] bg-brand/30 blur-3xl"></div>
+
+  <div class="relative mx-auto max-w-6xl text-center">
     <h2 class="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
       准备好开始了吗？
     </h2>
-    <p class="mt-4 max-w-lg text-slate-400">
+    <p class="mx-auto mt-4 max-w-lg text-slate-400">
       下载即可使用，无需注册。五分钟上线你的 VPS 销售平台。
     </p>
-    <div class="mt-8 flex flex-wrap gap-4">
+    <div class="mt-8 flex flex-wrap justify-center gap-4">
       <a
         href="https://github.com/huohuastudio/novaix-releases/releases"
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex items-center gap-2 rounded-xl bg-brand px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
+        class="btn-primary"
       >
         下载安装
       </a>
@@ -20,10 +23,28 @@
         href="https://docs.huohuastudio.com/novaix"
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex items-center gap-2 rounded-xl border border-white/15 px-7 py-3 text-sm font-medium text-slate-200 transition-all hover:border-white/30 hover:bg-white/5"
+        class="btn-ghost"
       >
         阅读文档
       </a>
     </div>
   </div>
 </section>
+
+<style>
+  .cta-floor {
+    position: absolute;
+    left: -25%;
+    right: -25%;
+    bottom: 0;
+    height: 70%;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, rgba(60, 190, 255, 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(60, 190, 255, 0.5) 1px, transparent 1px);
+    background-size: 72px 72px;
+    transform: perspective(520px) rotateX(64deg);
+    transform-origin: 50% 100%;
+    mask-image: linear-gradient(to top, black 10%, transparent 95%);
+  }
+</style>

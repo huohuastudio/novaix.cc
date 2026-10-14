@@ -46,20 +46,19 @@ const faqs = [
   },
 ];
 ---
-
-<section id="faq" class="px-6 py-20 sm:py-28">
+<section id="faq" class="page-section">
   <div class="mx-auto max-w-3xl">
-    <h2 class="font-display text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50" data-animate>
+    <h2 class="section-title" data-animate>
       常见问题
     </h2>
 
-    <div class="mt-10 divide-y divide-zinc-200 dark:divide-zinc-700" data-animate style="--stagger:.1s">
+    <div class="mt-10 divide-y divide-zinc-200 dark:divide-white/[0.08] border-y border-zinc-200 dark:border-white/[0.08]" data-animate style="--stagger:.1s">
       {faqs.map((faq) => (
         <details class="group">
-          <summary class="flex cursor-pointer items-center justify-between py-5 text-[0.95rem] font-medium text-zinc-900 transition-colors hover:text-brand [&::-webkit-details-marker]:hidden dark:text-zinc-50">
+          <summary class="flex cursor-pointer items-center justify-between gap-6 py-5 text-[0.95rem] font-medium text-zinc-800 dark:text-slate-100 transition-colors hover:text-brand dark:hover:text-glow group-open:text-zinc-900 dark:group-open:text-white [&::-webkit-details-marker]:hidden">
             {faq.q}
             <svg
-              class="h-5 w-5 shrink-0 text-zinc-400 transition-transform group-open:rotate-45 dark:text-zinc-500"
+              class="h-5 w-5 shrink-0 text-zinc-500 dark:text-slate-500 transition-transform group-open:rotate-45 group-open:text-brand dark:group-open:text-glow"
               fill="none"
               stroke="currentColor"
               stroke-width="1.5"
@@ -68,7 +67,7 @@ const faqs = [
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
           </summary>
-          <div class="break-words pb-5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+          <div class="break-words pb-5 pr-10 text-sm leading-relaxed text-zinc-500 dark:text-slate-400">
             {faq.a}
           </div>
         </details>

@@ -18,6 +18,17 @@ const canonicalURL = new URL(Astro.url.pathname, "https://novaix.cc").href;
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
+    <!-- 在首次绘制前应用主题，避免闪烁。默认亮色，可选 dark / auto（跟随系统） -->
+    <script is:inline>
+      (function () {
+        var t;
+        try { t = localStorage.getItem("theme"); } catch (e) {}
+        if (t !== "dark" && t !== "auto") t = "light";
+        var root = document.documentElement;
+        root.dataset.theme = t;
+        root.classList.toggle("dark", t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches));
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -25,7 +36,7 @@ const canonicalURL = new URL(Astro.url.pathname, "https://novaix.cc").href;
     <meta name="description" content={description} />
     <meta name="keywords" content="VPS管理系统,IDC管理,主机销售系统,服务器管理,虚拟化管理面板,云主机管理,VPS面板,主机商系统" />
     <meta name="author" content="Spark Studio" />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#05070d" />
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
@@ -59,7 +70,7 @@ const canonicalURL = new URL(Astro.url.pathname, "https://novaix.cc").href;
     />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen overflow-x-clip bg-white text-zinc-800 antialiased dark:bg-zinc-950 dark:text-zinc-100">
+  <body class="min-h-screen overflow-x-clip bg-white text-zinc-800 antialiased dark:bg-depth dark:text-slate-300">
     <slot />
     <script>
       const io = new IntersectionObserver(

@@ -1,4 +1,6 @@
 ---
+import ThemeToggle from "./ThemeToggle.astro";
+
 interface Props {
   variant?: "dark" | "light";
 }
@@ -15,9 +17,13 @@ const links = [
   { label: "文档", href: "https://docs.huohuastudio.com/novaix", ext: true },
   { label: "GitHub", href: "https://github.com/huohuastudio/novaix-releases", ext: true },
 ];
+
+const toggleClass = isDark
+  ? "text-slate-300/80 hover:bg-white/10 hover:text-white"
+  : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-300/80 dark:hover:bg-white/10 dark:hover:text-white";
 ---
 
-<header id="hdr" class="fixed top-0 z-50 w-full transition-[background,box-shadow] duration-300" data-variant={variant}>
+<header id="hdr" class="fixed top-0 z-50 w-full transition-[background-color,box-shadow] duration-300" data-variant={variant}>
   <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
     <a href="/" class:list={["flex items-center gap-2 font-display text-[1.05rem] font-bold tracking-tight", isDark ? "text-white" : "text-zinc-900 dark:text-white"]}>
       <img src="/logo.svg" alt="" class="h-7 w-7" aria-hidden="true" />
@@ -40,6 +46,7 @@ const links = [
           )}
         </a>
       ))}
+      <ThemeToggle class={[toggleClass, "-mx-2"]} />
       <a
         href="https://github.com/huohuastudio/novaix-releases/releases"
         target="_blank"
@@ -50,11 +57,14 @@ const links = [
       </a>
     </nav>
 
-    <button id="mbtn" class="md:hidden" aria-label="菜单">
-      <svg class:list={["h-5 w-5", isDark ? "text-slate-300" : "text-zinc-600 dark:text-slate-300"]} fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
-        <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
-      </svg>
-    </button>
+    <div class="flex items-center gap-3 md:hidden">
+      <ThemeToggle class={toggleClass} />
+      <button id="mbtn" aria-label="菜单">
+        <svg class:list={["h-5 w-5", isDark ? "text-slate-300" : "text-zinc-600 dark:text-slate-300"]} fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+          <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
+    </div>
   </div>
 
   <div id="mmenu" class:list={["hidden border-t px-6 py-5 backdrop-blur-xl md:hidden", isDark ? "border-white/10 bg-depth/95" : "border-zinc-100 bg-white/95 dark:border-white/10 dark:bg-depth/95"]}>
@@ -83,30 +93,49 @@ const links = [
   const mbtn = document.getElementById("mbtn")!;
   const mmenu = document.getElementById("mmenu")!;
 
-  const variant = hdr.dataset.variant;
-  const isLight = variant === "light";
-  const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const root = document.documentElement;
 
-  let scrolled = false;
-  const onScroll = () => {
-    const now = scrollY > 16;
-    if (now === scrolled) return;
-    scrolled = now;
-    if (now) {
-      const useDark = !isLight || isDarkMode;
-      hdr.style.backgroundColor = useDark ? "rgba(15,23,42,0.85)" : "rgba(255,255,255,0.85)";
-      hdr.style.backdropFilter = "blur(16px) saturate(1.2)";
-      hdr.style.webkitBackdropFilter = "blur(16px) saturate(1.2)";
-      hdr.style.boxShadow = useDark ? "0 1px 2px rgba(0,0,0,.2)" : "0 1px 2px rgba(0,0,0,.06)";
-    } else {
-      hdr.style.backgroundColor = "";
-      hdr.style.backdropFilter = "";
-      hdr.style.webkitBackdropFilter = "";
-      hdr.style.boxShadow = "";
-    }
-  };
+  // 滚动后的毛玻璃底色由 CSS 根据 data-scrolled 和当前主题决定（见 global.css）
+  const onScroll = () => hdr.toggleAttribute("data-scrolled", scrollY > 16);
   addEventListener("scroll", onScroll, { passive: true });
   onScroll();
+
+  // ── 主题切换：亮色 → 深色 → 自动（跟随系统） ──
+  type Theme = "light" | "dark" | "auto";
+  const ORDER: Theme[] = ["light", "dark", "auto"];
+  const LABELS: Record<Theme, string> = { light: "亮色", dark: "深色", auto: "自动" };
+  const systemDark = matchMedia("(prefers-color-scheme: dark)");
+  const toggles = document.querySelectorAll<HTMLButtonElement>(".theme-toggle");
+
+  const current = () => (root.dataset.theme as Theme) || "light";
+  const nextOf = (theme: Theme) => ORDER[(ORDER.indexOf(theme) + 1) % ORDER.length];
+
+  function applyTheme(theme: Theme) {
+    root.dataset.theme = theme;
+    // 判定规则与 Layout.astro 里首次绘制前的内联脚本保持一致
+    root.classList.toggle("dark", theme === "dark" || (theme === "auto" && systemDark.matches));
+    const label = `主题：${LABELS[theme]}，点击切换为${LABELS[nextOf(theme)]}`;
+    toggles.forEach((btn) => {
+      btn.title = label;
+      btn.setAttribute("aria-label", label);
+    });
+  }
+
+  toggles.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const next = nextOf(current());
+      try {
+        localStorage.setItem("theme", next);
+      } catch {
+        // 无法写入本地存储时仅本次生效
+      }
+      applyTheme(next);
+    }),
+  );
+  systemDark.addEventListener("change", () => {
+    if (current() === "auto") applyTheme("auto");
+  });
+  applyTheme(current());
 
   mbtn.onclick = () => mmenu.classList.toggle("hidden");
   mmenu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => mmenu.classList.add("hidden")));
