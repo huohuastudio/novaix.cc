@@ -171,14 +171,45 @@ const tabs: Tab[] = [
             </ul>
           </div>
           <div>
-            <div class="magnify shot overflow-hidden">
+            <button
+              type="button"
+              data-zoom={i}
+              aria-label={`查看大图：${tab.imageAlt}`}
+              class="tour-zoom shot group relative block w-full cursor-pointer overflow-hidden transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+            >
               <img src={tab.image} alt={tab.imageAlt} class="w-full object-cover object-top" loading="lazy" />
-            </div>
+              <span class="pointer-events-none absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-zinc-900/75 px-3 py-1.5 text-xs font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+                点击查看大图
+              </span>
+            </button>
           </div>
         </div>
       ))}
     </div>
   </div>
+
+  <!-- 大图灯箱：可在全部能力之间切换浏览 -->
+  <dialog id="tour-lightbox" aria-label="产品截图大图" class="tour-lightbox">
+    <div class="flex h-full w-full flex-col items-center justify-center gap-5 px-4 pt-14 pb-24 outline-none sm:px-20 sm:pb-14" data-lb-stage tabindex="-1" autofocus>
+      <img data-lb-img alt="" class="max-h-[72vh] w-auto max-w-full rounded-lg object-contain shadow-[0_30px_120px_-20px_rgba(47,107,255,0.5)] ring-1 ring-white/10" />
+      <div class="max-w-3xl text-center">
+        <p class="text-xs font-medium tracking-wide text-slate-400"><span data-lb-label></span> · <span data-lb-count></span></p>
+        <h3 data-lb-title class="mt-1.5 font-display text-lg font-bold text-white sm:text-xl"></h3>
+        <p data-lb-desc class="mt-2 hidden text-sm leading-relaxed text-slate-300 sm:block"></p>
+      </div>
+    </div>
+
+    <button type="button" data-lb-close aria-label="关闭" class="lb-btn top-4 right-4">
+      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+    </button>
+    <button type="button" data-lb-prev aria-label="上一张" class="lb-btn bottom-6 left-[calc(50%-3.5rem)] sm:top-1/2 sm:bottom-auto sm:left-6 sm:-translate-y-1/2">
+      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+    </button>
+    <button type="button" data-lb-next aria-label="下一张" class="lb-btn bottom-6 right-[calc(50%-3.5rem)] sm:top-1/2 sm:right-6 sm:bottom-auto sm:-translate-y-1/2">
+      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+    </button>
+  </dialog>
 </section>
 
 <style>
@@ -194,9 +225,88 @@ const tabs: Tab[] = [
     }
   }
 
+  /* 灯箱：铺满视口，深色模糊背景 */
+  .tour-lightbox {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  .tour-lightbox::backdrop {
+    background: rgba(5, 7, 13, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .tour-lightbox[open] {
+    animation: lb-in 0.25s ease-out;
+  }
+
+  .tour-lightbox[open]::backdrop {
+    animation: lb-fade 0.25s ease-out;
+  }
+
+  .lb-btn {
+    position: absolute;
+    display: flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+
+  .lb-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .lb-btn:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  [data-lb-img].is-switching {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  [data-lb-img] {
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  @keyframes lb-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  @keyframes lb-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .tour-panel:not(.hidden) {
+    .tour-panel:not(.hidden),
+    .tour-lightbox[open],
+    .tour-lightbox[open]::backdrop {
       animation: none;
+    }
+    [data-lb-img] {
+      transition: none;
     }
   }
 </style>
@@ -205,17 +315,92 @@ const tabs: Tab[] = [
   const tabBtns = document.querySelectorAll<HTMLButtonElement>(".tour-tab");
   const panels = document.querySelectorAll<HTMLDivElement>(".tour-panel");
 
+  function activateTab(id: string | undefined) {
+    tabBtns.forEach((b) => {
+      const active = b.dataset.tab === id;
+      b.toggleAttribute("data-active", active);
+      b.setAttribute("aria-selected", String(active));
+    });
+    panels.forEach((p) => {
+      p.classList.toggle("hidden", p.dataset.panel !== id);
+    });
+  }
+
   tabBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.tab;
-      tabBtns.forEach((b) => {
-        const active = b.dataset.tab === id;
-        b.toggleAttribute("data-active", active);
-        b.setAttribute("aria-selected", String(active));
-      });
-      panels.forEach((p) => {
-        p.classList.toggle("hidden", p.dataset.panel !== id);
+    btn.addEventListener("click", () => activateTab(btn.dataset.tab));
+  });
+
+  // 大图灯箱：内容直接取自各面板，保证与页面文案一致
+  const lb = document.getElementById("tour-lightbox") as HTMLDialogElement | null;
+  if (lb) {
+    const slides = Array.from(panels).map((p) => ({
+      id: p.dataset.panel,
+      label: document.getElementById(`tour-tab-${p.dataset.panel}`)?.textContent?.trim() ?? "",
+      title: p.querySelector("h3")?.textContent ?? "",
+      desc: p.querySelector("h3 + p")?.textContent ?? "",
+      src: p.querySelector("img")?.getAttribute("src") ?? "",
+      alt: p.querySelector("img")?.getAttribute("alt") ?? "",
+    }));
+    const img = lb.querySelector<HTMLImageElement>("[data-lb-img]")!;
+    const label = lb.querySelector("[data-lb-label]")!;
+    const count = lb.querySelector("[data-lb-count]")!;
+    const title = lb.querySelector("[data-lb-title]")!;
+    const desc = lb.querySelector("[data-lb-desc]")!;
+    let current = 0;
+
+    const render = (i: number, animate = true) => {
+      current = (i + slides.length) % slides.length;
+      const s = slides[current];
+      const apply = () => {
+        img.src = s.src;
+        img.alt = s.alt;
+        label.textContent = s.label;
+        count.textContent = `${current + 1} / ${slides.length}`;
+        title.textContent = s.title;
+        desc.textContent = s.desc;
+        img.classList.remove("is-switching");
+      };
+      if (!animate) return apply();
+      img.classList.add("is-switching");
+      setTimeout(apply, 150);
+    };
+
+    document.querySelectorAll<HTMLButtonElement>("[data-zoom]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        render(Number(btn.dataset.zoom), false);
+        lb.showModal();
+        document.documentElement.style.overflow = "hidden";
       });
     });
-  });
+
+    lb.querySelector("[data-lb-prev]")!.addEventListener("click", () => render(current - 1));
+    lb.querySelector("[data-lb-next]")!.addEventListener("click", () => render(current + 1));
+    lb.querySelector("[data-lb-close]")!.addEventListener("click", () => lb.close());
+
+    // 点击图片和文字以外的空白区域关闭
+    lb.addEventListener("click", (e) => {
+      if (e.target === lb || (e.target as HTMLElement).hasAttribute("data-lb-stage")) lb.close();
+    });
+
+    lb.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") render(current - 1);
+      if (e.key === "ArrowRight") render(current + 1);
+    });
+
+    // 触屏左右滑动切换
+    let touchX: number | null = null;
+    lb.addEventListener("touchstart", (e) => { touchX = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener("touchend", (e) => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) > 50) render(current + (dx < 0 ? 1 : -1));
+    });
+
+    // 关闭后页面 Tab 停在最后浏览的能力上
+    lb.addEventListener("close", () => {
+      document.documentElement.style.overflow = "";
+      activateTab(slides[current].id);
+    });
+  }
 </script>

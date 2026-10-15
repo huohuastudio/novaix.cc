@@ -85,32 +85,6 @@ const canonicalURL = new URL(Astro.url.pathname, "https://novaix.cc").href;
         { threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
       );
       document.querySelectorAll("[data-animate]").forEach((el) => io.observe(el));
-
-      const ZOOM = 2;
-      document.querySelectorAll<HTMLElement>(".magnify").forEach((wrap) => {
-        const img = wrap.querySelector("img");
-        if (!img) return;
-        const lens = document.createElement("div");
-        lens.className = "magnify-lens";
-        wrap.appendChild(lens);
-
-        let rect: DOMRect;
-        const lw = 80;
-
-        wrap.addEventListener("mouseenter", () => {
-          rect = wrap.getBoundingClientRect();
-          lens.style.backgroundImage = `url(${img.src})`;
-          lens.style.backgroundSize = `${rect.width * ZOOM}px ${rect.height * ZOOM}px`;
-        });
-
-        wrap.addEventListener("mousemove", (e: MouseEvent) => {
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          lens.style.left = `${x - lw}px`;
-          lens.style.top = `${y - lw}px`;
-          lens.style.backgroundPosition = `-${x * ZOOM - lw}px -${y * ZOOM - lw}px`;
-        }, { passive: true });
-      });
     </script>
   </body>
 </html>
