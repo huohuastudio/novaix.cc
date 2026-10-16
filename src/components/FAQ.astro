@@ -1,4 +1,5 @@
 ---
+// 答案为站内维护的可信内容，允许内联链接等 HTML
 const faqs = [
   {
     q: "Novaix 是免费的吗？",
@@ -26,7 +27,7 @@ const faqs = [
   },
   {
     q: "可以自定义前端界面吗？",
-    a: "可以。Novaix 支持主题系统，前端源码完全开源（novaix-ui 仓库）。你可以基于默认主题二次开发，也可以从主题市场下载社区主题，热切换无需重启。",
+    a: "可以。Novaix 支持主题系统，前端源码完全开源（<a href='https://github.com/huohuastudio/novaix-ui' target='_blank' rel='noopener noreferrer' class='text-brand dark:text-glow underline-offset-4 hover:underline'>novaix-ui</a> 仓库）。你可以基于默认主题二次开发，也可以从主题市场下载社区主题，热切换无需重启。",
   },
   {
     q: "如何与已有系统集成？",
@@ -68,7 +69,7 @@ const faqs = [
             </svg>
           </summary>
           <div class="break-words pb-5 pr-10 text-sm leading-relaxed text-zinc-500 dark:text-slate-400">
-            {faq.a}
+            <Fragment set:html={faq.a} />
           </div>
         </details>
       ))}
