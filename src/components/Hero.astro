@@ -1,5 +1,6 @@
 ---
 import RackAisle from "./bg/RackAisle.astro";
+import DashboardDemo from "./demo/DashboardDemo.astro";
 
 const stats = [
   { value: "30+", label: "扩展插件" },
@@ -86,16 +87,11 @@ const lines = headline.map((text) => [...text].map((char) => ({ char, i: charInd
     </div>
   </div>
 
-  <!-- Dashboard 截图预览：随滚动从倾斜放平 -->
+  <!-- 管理后台可交互演示：随滚动从倾斜放平 -->
   <div class="relative z-10 mx-auto w-full max-w-7xl px-4 [perspective:1800px]">
     <div class="pointer-events-none absolute inset-x-[20%] top-0 h-24 rounded-[100%] bg-brand/30 blur-3xl"></div>
     <div id="hero-shot" class="relative origin-[50%_70%] will-change-transform">
-      <img
-        src="/screenshots/dashboard.png"
-        alt="Novaix 管理后台"
-        class="w-full rounded-xl shadow-[0_-12px_90px_-20px_rgba(46,160,255,0.6)] ring-1 ring-white/10"
-        loading="eager"
-      />
+      <DashboardDemo class="rounded-xl shadow-[0_-12px_90px_-20px_rgba(46,160,255,0.6)] ring-1 ring-white/10" />
     </div>
     <div class="pointer-events-none h-20 bg-gradient-to-t from-depth to-transparent"></div>
   </div>

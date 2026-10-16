@@ -1,0 +1,441 @@
+---
+// 管理后台仪表盘演示：结构与 class 对应 ui/src/pages/admin/dashboard/index.tsx
+import AdminFrame from "./AdminFrame.astro";
+import Icon from "./Icon.astro";
+import { badge, selectTrigger, tabsList, tabsTrigger } from "./classes";
+import { dashboard as d } from "./dashboard-data";
+import {
+  beijingDayStart,
+  formatAmount,
+  formatChartDate,
+  formatCompactDateTime,
+  formatDisk,
+  formatMemory,
+  formatPercent,
+  formatShortDate,
+} from "./format";
+import { renderRevenueChart } from "./revenue-chart";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const now = new Date();
+const minutesAgo = (m: number) => new Date(now.getTime() - m * 60_000);
+
+const revenue = d.revenueTrend.map((amount, i) => ({
+  date: formatChartDate(beijingDayStart(now, d.revenueTrend.length - 1 - i)),
+  amount: amount / 100,
+}));
+const revenueTotal = revenue.reduce((s, p) => s + p.amount, 0);
+const revenueGrowth = d.orders.revenue_last_month
+  ? ((d.orders.revenue_month - d.orders.revenue_last_month) / d.orders.revenue_last_month) * 100
+  : null;
+
+const STATUS_META: Record<string, { label: string; tw: string }> = {
+  running: { label: "运行中", tw: "bg-emerald-500" },
+  stopped: { label: "已停止", tw: "bg-muted-foreground/40" },
+  error: { label: "异常", tw: "bg-destructive" },
+  creating: { label: "创建中", tw: "bg-amber-500" },
+  other: { label: "其他", tw: "bg-sky-500" },
+};
+const statusItems = [
+  { key: "running", value: d.instances.running },
+  { key: "stopped", value: d.instances.stopped },
+  { key: "error", value: d.instances.error },
+  { key: "creating", value: d.instances.creating },
+];
+const known = statusItems.reduce((s, i) => s + i.value, 0);
+statusItems.push({ key: "other", value: Math.max(d.instances.total - known, 0) });
+const instanceStatus = statusItems.filter((i) => i.value > 0);
+const instanceTotal = instanceStatus.reduce((s, i) => s + i.value, 0);
+
+const pendingItems = [
+  { count: d.orders.pending, icon: "shopping-cart", label: "待支付订单", danger: false },
+  { count: d.tickets.open, icon: "message-square-text", label: "待处理工单", danger: false },
+  { count: d.instances.error, icon: "monitor-cog", label: "异常实例", danger: true },
+  { count: d.nodes.error, icon: "server", label: "异常节点", danger: true },
+];
+const pendingTotal = pendingItems.reduce((s, i) => s + i.count, 0);
+
+const resources = [
+  { label: "CPU", used: d.resources.cpu_used, total: d.resources.cpu_total, format: (v: number) => `${v} 核` },
+  { label: "内存", used: d.resources.mem_used, total: d.resources.mem_total, format: formatMemory },
+  { label: "磁盘", used: d.resources.disk_used, total: d.resources.disk_total, format: formatDisk },
+];
+
+function usageColor(pct: number) {
+  return pct > 80 ? "bg-destructive" : pct > 60 ? "bg-amber-500" : "bg-foreground/60";
+}
+
+const ranking = [...d.nodeRanking].sort((a, b) => b.cpu_usage - a.cpu_usage).slice(0, 5);
+
+const orderStatusMap: Record<string, { label: string; variant: string }> = {
+  pending: { label: "待支付", variant: "outline" },
+  paid: { label: "已支付", variant: "default" },
+  cancelled: { label: "已取消", variant: "secondary" },
+  refunded: { label: "已退款", variant: "destructive" },
+  pending_refund: { label: "退款处理中", variant: "destructive" },
+};
+const orderTypeMap: Record<string, string> = {
+  new: "新购",
+  renew: "续费",
+  upgrade: "升级",
+  addon_ip: "附加 IP",
+  traffic_package: "流量包",
+};
+
+function daysUntil(date: Date) {
+  const days = Math.ceil((date.getTime() - now.getTime()) / 86400000);
+  if (days <= 0) return "今天";
+  if (days === 1) return "明天";
+  return `${days} 天后`;
+}
+// 到期时间统一为当天 23:59（北京时间）
+const expireAt = (daysLeft: number) => new Date(beijingDayStart(now, -daysLeft).getTime() + (23 * 60 + 59) * 60_000);
+
+function actionColor(action: string) {
+  if (action.includes("delete") || action.includes("force")) return "bg-destructive";
+  if (action.includes("create") || action.includes("init") || action.includes("pay")) return "bg-emerald-500";
+  if (action.includes("update") || action.includes("adjust")) return "bg-amber-500";
+  return "bg-muted-foreground/60";
+}
+
+const tableHead = "h-10 px-2 align-middle font-medium whitespace-nowrap text-foreground";
+const tableCell = "p-2 align-middle whitespace-nowrap";
+const kpiLink = "p-5 transition-colors hover:bg-muted/40 cursor-pointer";
+
+const demoData = {
+  revenue,
+  ranking: d.nodeRanking,
+  regions: d.regions,
+};
+---
+
+<AdminFrame active="仪表盘" breadcrumb={["仪表盘"]} class={className}>
+  <div data-nx-dashboard data-nx-scroll class="flex-1 space-y-6 overflow-y-auto px-6 pt-6 pb-8">
+    <script is:inline type="application/json" data-nx-data set:html={JSON.stringify(demoData)} />
+
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">仪表盘</h1>
+      <p class="mt-1 text-sm text-muted-foreground">欢迎使用 Novaix 管理后台</p>
+    </div>
+
+    <!-- KPI 条 -->
+    <div class="grid grid-cols-5 gap-px overflow-hidden rounded-lg border bg-border [&>*]:bg-background">
+      <div class="p-5">
+        <p class="text-xs text-muted-foreground">本月收入</p>
+        <p class="mt-1.5 text-2xl font-semibold tracking-tight tabular-nums">{formatAmount(d.orders.revenue_month)}</p>
+        <div class="mt-1 truncate text-xs text-muted-foreground">
+          {revenueGrowth !== null ? (
+            <span class:list={["inline-flex items-center gap-0.5", revenueGrowth >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"]}>
+              <Icon name={revenueGrowth >= 0 ? "trending-up" : "trending-down"} class="size-3" />
+              <span class="font-medium tabular-nums">{Math.abs(revenueGrowth).toFixed(1)}%</span>
+              <span class="ml-0.5 text-muted-foreground">较上月</span>
+            </span>
+          ) : (
+            <span>上月无收入数据</span>
+          )}
+        </div>
+      </div>
+      <div class={kpiLink}>
+        <p class="text-xs text-muted-foreground">今日收入</p>
+        <p class="mt-1.5 text-2xl font-semibold tracking-tight tabular-nums">{formatAmount(d.orders.revenue_today)}</p>
+        <div class="mt-1 truncate text-xs text-muted-foreground">
+          已支付 <span class="text-foreground tabular-nums">{d.orders.paid_total}</span> / 共 <span class="text-foreground tabular-nums">{d.orders.total}</span> 单
+        </div>
+      </div>
+      <div class={kpiLink}>
+        <p class="text-xs text-muted-foreground">实例</p>
+        <p class="mt-1.5 text-2xl font-semibold tracking-tight tabular-nums">{d.instances.total}</p>
+        <div class="mt-1 truncate text-xs text-muted-foreground">运行中 <span class="text-foreground tabular-nums">{d.instances.running}</span></div>
+      </div>
+      <div class={kpiLink}>
+        <p class="text-xs text-muted-foreground">节点</p>
+        <p class="mt-1.5 text-2xl font-semibold tracking-tight tabular-nums">{d.nodes.total}</p>
+        <div class="mt-1 truncate text-xs text-muted-foreground">
+          在线 <span class="text-foreground tabular-nums">{d.nodes.online}</span>
+          {d.nodes.error > 0 && <> · <span class="text-destructive tabular-nums">异常 {d.nodes.error}</span></>}
+        </div>
+      </div>
+      <div class={kpiLink}>
+        <p class="text-xs text-muted-foreground">用户</p>
+        <p class="mt-1.5 text-2xl font-semibold tracking-tight tabular-nums">{d.users.total}</p>
+        <div class="mt-1 truncate text-xs text-muted-foreground">活跃 <span class="text-foreground tabular-nums">{d.users.active}</span></div>
+      </div>
+    </div>
+
+    <!-- 收入趋势 + 待处理 / 实例状态 -->
+    <div class="grid grid-cols-3 gap-4">
+      <section class="col-span-2 rounded-lg border p-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-medium">收入趋势</h3>
+            <p class="mt-0.5 text-xs text-muted-foreground">
+              近 <span data-nx-revenue-days>30</span> 天合计{" "}
+              <span data-nx-revenue-total class="font-medium text-foreground tabular-nums">{formatAmount(Math.round(revenueTotal * 100))}</span>
+            </p>
+          </div>
+          <div data-orientation="horizontal" data-slot="tabs" class="group/tabs flex gap-2 data-horizontal:flex-col">
+            <div role="tablist" data-slot="tabs-list" data-variant="default" class={tabsList}>
+              {["7", "14", "30"].map((days) => (
+                <button
+                  type="button"
+                  role="tab"
+                  data-nx-days={days}
+                  data-state={days === "30" ? "active" : "inactive"}
+                  aria-selected={days === "30" ? "true" : "false"}
+                  data-slot="tabs-trigger"
+                  class={tabsTrigger}
+                >
+                  {days} 天
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div data-slot="chart" class="flex h-[240px] w-full justify-center text-xs" style="--color-amount: var(--foreground)">
+            <div data-nx-chart class="relative h-full w-full cursor-default">
+              <Fragment set:html={renderRevenueChart(revenue, 705, "nx-revenue-gradient")} />
+              <div data-nx-chart-tip class="pointer-events-none invisible absolute top-0 left-0" style="transition: transform 400ms">
+                <div class="grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+                  <div data-nx-chart-tip-date class="font-medium"></div>
+                  <div class="grid gap-1.5">
+                    <div data-nx-chart-tip-value class="flex w-full flex-wrap items-center gap-2"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="flex flex-col rounded-lg border">
+        <div class="p-5 pb-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-medium">待处理事项</h3>
+            {pendingTotal > 0 && <span class="text-xs text-muted-foreground tabular-nums">共 {pendingTotal} 项</span>}
+          </div>
+          <div class="-mx-2 mt-3">
+            {pendingItems.map((item) => (
+              <div class="group flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted/60">
+                <Icon name={item.icon} class="size-4 text-muted-foreground" />
+                <span class:list={[item.count === 0 && "text-muted-foreground"]}>{item.label}</span>
+                <span
+                  class:list={[
+                    "ml-auto tabular-nums",
+                    item.count === 0 ? "text-muted-foreground" : item.danger ? "font-medium text-destructive" : "font-medium",
+                  ]}
+                >
+                  {item.count}
+                </span>
+                <Icon name="chevron-right" class="size-3.5 text-muted-foreground/50 transition-colors group-hover:text-muted-foreground" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="mt-auto border-t p-5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-medium">实例状态</h3>
+            <span class="text-xs text-muted-foreground tabular-nums">共 {d.instances.total} 台</span>
+          </div>
+          <div class="mt-3 flex h-2 w-full gap-0.5 overflow-hidden rounded-full">
+            {instanceStatus.map((s) => (
+              <div class={STATUS_META[s.key].tw} style={`width: ${(s.value / instanceTotal) * 100}%`}></div>
+            ))}
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
+            {instanceStatus.map((s) => (
+              <div class="flex items-center gap-1.5 text-xs">
+                <span class={`size-2 rounded-full ${STATUS_META[s.key].tw}`}></span>
+                <span class="text-muted-foreground">{STATUS_META[s.key].label}</span>
+                <span class="ml-auto font-medium tabular-nums">{s.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 节点分布 + 资源使用 / 排行 -->
+    <div class="grid grid-cols-3 gap-4">
+      <section class="col-span-2 rounded-lg border">
+        <div class="flex items-center justify-between px-5 pt-5 pb-2">
+          <h3 class="text-sm font-medium">节点分布</h3>
+          <span class="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground">查看全部 <Icon name="arrow-right" class="inline size-3" /></span>
+        </div>
+        <div class="px-5 pb-4">
+          <div class="relative overflow-hidden rounded-lg select-none">
+            <svg data-nx-map viewBox="0 0 960 480" class="h-auto w-full cursor-grab touch-none active:cursor-grabbing" style="max-height: 380px"></svg>
+            <div class="absolute right-2.5 bottom-2.5 flex flex-col gap-0.5">
+              {[
+                { icon: "plus", action: "in" },
+                { icon: "minus", action: "out" },
+                { icon: "locate-fixed", action: "reset" },
+              ].map((b) => (
+                <button
+                  type="button"
+                  data-nx-map-zoom={b.action}
+                  class="flex size-7 cursor-pointer items-center justify-center rounded-md border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <Icon name={b.icon} class="size-3.5" />
+                </button>
+              ))}
+            </div>
+            <div data-nx-map-tip hidden class="pointer-events-none absolute z-10 rounded-lg border bg-popover px-3 py-2 text-xs shadow-md" style="transform: translate(-50%, -100%)">
+              <p data-nx-map-tip-name class="font-medium"></p>
+              <div class="mt-1 flex items-center gap-1.5">
+                <span data-nx-map-tip-dot class="size-2 rounded-full"></span>
+                <span data-nx-map-tip-nodes></span>
+              </div>
+              <div data-nx-map-tip-usage class="mt-1 text-muted-foreground tabular-nums"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="flex flex-col rounded-lg border">
+        <div class="p-5">
+          <h3 class="text-sm font-medium">资源使用</h3>
+          <div class="mt-4 space-y-3.5">
+            {resources.map((r) => {
+              const pct = r.total > 0 ? Math.min((r.used / r.total) * 100, 100) : 0;
+              return (
+                <div>
+                  <div class="flex items-baseline justify-between text-xs">
+                    <span class="text-muted-foreground">{r.label}</span>
+                    <span class="text-muted-foreground tabular-nums">{r.format(r.used)} / {r.format(r.total)}<span class="ml-2 font-medium text-foreground">{pct.toFixed(0)}%</span></span>
+                  </div>
+                  <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div class={`h-full rounded-full ${usageColor(pct)} transition-all duration-700`} style={`width: ${pct}%`}></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div class="flex-1 border-t p-5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-medium">节点资源排行</h3>
+            <div class="relative">
+              <button type="button" data-nx-select data-state="closed" data-size="sm" aria-expanded="false" class={selectTrigger}>
+                <span data-nx-select-value>按 CPU</span>
+                <Icon name="chevrons-up-down" class="pointer-events-none size-4 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+          <div data-nx-ranking class="mt-3 space-y-2.5">
+            {ranking.map((node) => (
+              <div class="flex items-center gap-3">
+                <span class="w-24 shrink-0 cursor-pointer truncate text-sm hover:underline">{node.name}</span>
+                <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                  <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                    <div class={`h-full rounded-full ${usageColor(Math.min(node.cpu_usage, 100))} transition-all duration-500`} style={`width: ${Math.min(node.cpu_usage, 100)}%`}></div>
+                  </div>
+                  <span class="w-10 text-right text-xs text-muted-foreground tabular-nums">{formatPercent(node.cpu_usage)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 最近订单 + 即将到期 / 最近操作 -->
+    <div class="grid grid-cols-3 items-start gap-4">
+      <section class="col-span-2 overflow-hidden rounded-lg border">
+        <div class="flex items-center justify-between px-5 pt-5 pb-3">
+          <h3 class="text-sm font-medium">最近订单</h3>
+          <span class="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground">查看全部 <Icon name="arrow-right" class="inline size-3" /></span>
+        </div>
+        <div data-slot="table-container" class="relative w-full overflow-x-auto rounded-md">
+          <table data-slot="table" class="w-full caption-bottom text-sm">
+            <thead data-slot="table-header" class="bg-muted [&_tr]:border-b">
+              <tr data-slot="table-row" class="border-b transition-colors hover:bg-muted/50">
+                <th class={`${tableHead} pl-5 text-left`}>用户</th>
+                <th class={`${tableHead} text-left`}>类型</th>
+                <th class={`${tableHead} text-right`}>金额</th>
+                <th class={`${tableHead} pl-6 text-left`}>状态</th>
+                <th class={`${tableHead} pr-5 text-right`}>时间</th>
+              </tr>
+            </thead>
+            <tbody data-slot="table-body" class="[&_tr:last-child]:border-0">
+              {d.recentOrders.map((o) => {
+                const status = orderStatusMap[o.status];
+                return (
+                  <tr data-slot="table-row" class="border-b transition-colors hover:bg-muted/50">
+                    <td class={`${tableCell} pl-5 font-medium`}>{o.username}</td>
+                    <td class={`${tableCell} text-muted-foreground`}>{orderTypeMap[o.type] ?? o.type}</td>
+                    <td class={`${tableCell} text-right tabular-nums`}>{formatAmount(o.amount)}</td>
+                    <td class={`${tableCell} pl-6`}>
+                      <span data-slot="badge" class={badge[status?.variant ?? "secondary"]}>{status?.label ?? o.status}</span>
+                    </td>
+                    <td class={`${tableCell} pr-5 text-right text-xs text-muted-foreground tabular-nums`}>{formatCompactDateTime(minutesAgo(o.minutesAgo))}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="space-y-4">
+        <section class="overflow-hidden rounded-lg border">
+          <div class="flex items-center justify-between px-5 pt-5 pb-2">
+            <h3 class="text-sm font-medium">即将到期</h3>
+            <span class="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground">查看全部 <Icon name="arrow-right" class="inline size-3" /></span>
+          </div>
+          <div class="divide-y">
+            {d.expiring.map((inst) => {
+              const at = expireAt(inst.daysLeft);
+              return (
+                <div class="flex cursor-pointer items-center justify-between px-5 py-2.5 transition-colors hover:bg-muted/30">
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-medium">{inst.name}</p>
+                    <p class="truncate text-2xs text-muted-foreground">{inst.username} · {inst.ip}</p>
+                  </div>
+                  <div class="ml-3 shrink-0 text-right">
+                    <p class="text-xs font-medium tabular-nums">{daysUntil(at)}</p>
+                    <p class="text-2xs text-muted-foreground tabular-nums">{formatShortDate(at)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section class="rounded-lg border">
+          <div class="flex items-center justify-between px-5 pt-5 pb-3">
+            <h3 class="text-sm font-medium">最近操作</h3>
+            <span class="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground">查看全部 <Icon name="arrow-right" class="inline size-3" /></span>
+          </div>
+          <div class="px-5 pb-3">
+            {d.events.map((event, idx) => (
+              <div class="flex gap-3">
+                <div class="flex flex-col items-center">
+                  <div class={`mt-1.5 size-2 shrink-0 rounded-full ${actionColor(event.action)}`}></div>
+                  {idx < d.events.length - 1 && <div class="w-px flex-1 bg-border"></div>}
+                </div>
+                <div class="min-w-0 pb-3">
+                  <p class="truncate text-sm leading-snug">{event.detail}</p>
+                  <p class="text-2xs text-muted-foreground">{event.username} · {formatCompactDateTime(minutesAgo(event.minutesAgo))}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</AdminFrame>
+
+<script>
+  import { initDashboard } from "./dashboard";
+
+  document.querySelectorAll<HTMLElement>("[data-nx-dashboard]").forEach(initDashboard);
+</script>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./novaix-app.css";
 
 /* 深色模式由 <html class="dark"> 控制，支持手动切换 */
 @custom-variant dark (&:where(.dark, .dark *));

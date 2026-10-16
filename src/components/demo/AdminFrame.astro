@@ -1,0 +1,255 @@
+---
+// 后台界面演示外框：浏览器窗口 + 侧边栏 + 顶栏，页面内容通过默认插槽传入。
+// 界面按 1440×900 的后台视口渲染，再整体缩放到外框宽度，保证各尺寸下布局一致。
+import Icon from "./Icon.astro";
+import { navGroups } from "./nav";
+import { ghostButton, ghostButtonSm, sidebarGroupLabel, sidebarMenuButton, sidebarMenuButtonLg } from "./classes";
+
+interface Props {
+  /** 当前页面在侧边栏中的菜单名 */
+  active: string;
+  /** 面包屑 */
+  breadcrumb: string[];
+  /** 地址栏显示的路径 */
+  path?: string;
+  class?: string;
+}
+
+const { active, breadcrumb, path = "/admin", class: className = "" } = Astro.props;
+
+import { APP_HEIGHT, APP_WIDTH, CHROME_HEIGHT } from "./admin-frame";
+
+const totalHeight = APP_HEIGHT + CHROME_HEIGHT;
+
+const toolbar = [
+  { icon: "circle-question-mark", tip: "新手教程", button: ghostButton },
+  { icon: "list-todo", tip: "任务列表", button: ghostButtonSm },
+  { icon: "megaphone", tip: "广播通知", button: ghostButton },
+  { icon: "external-link", tip: "前台门户", button: ghostButton },
+  { icon: "settings", tip: "系统设置", button: ghostButton },
+];
+---
+
+<div
+  data-nx-frame
+  class={`nx-frame relative w-full overflow-hidden select-none ${className}`}
+  style={`aspect-ratio:${APP_WIDTH}/${totalHeight};--nx-s:0.8667`}
+>
+  <div class="nx-frame-inner absolute top-0 left-0" style={`width:${APP_WIDTH}px;height:${totalHeight}px`}>
+    <!-- 浏览器标题栏 -->
+    <div
+      class="relative flex items-center border-b border-black/[0.08] bg-[#ececec] px-4 dark:border-white/[0.06] dark:bg-[#1c1c1e]"
+      style={`height:${CHROME_HEIGHT}px`}
+      aria-hidden="true"
+    >
+      <div class="flex gap-2">
+        <span class="size-3 rounded-full bg-[#ff5f57]"></span>
+        <span class="size-3 rounded-full bg-[#febc2e]"></span>
+        <span class="size-3 rounded-full bg-[#28c840]"></span>
+      </div>
+      <div
+        class="absolute left-1/2 flex h-7 w-[420px] -translate-x-1/2 items-center justify-center rounded-md bg-white text-[13px] text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-300"
+      >
+        novaix.huohuastudio.com{path}
+      </div>
+    </div>
+
+    <div class="nx-app relative overflow-hidden" style={`width:${APP_WIDTH}px;height:${APP_HEIGHT}px`}>
+      <div
+        data-slot="sidebar-wrapper"
+        class="group/sidebar-wrapper flex h-full w-full overflow-hidden has-data-[variant=inset]:bg-sidebar"
+        style="--sidebar-width: 16rem; --sidebar-width-icon: 2.5rem;"
+      >
+        <!-- 侧边栏 -->
+        <div
+          class="group peer block text-sidebar-foreground"
+          data-state="expanded"
+          data-collapsible=""
+          data-variant="inset"
+          data-side="left"
+          data-slot="sidebar"
+        >
+          <div
+            data-slot="sidebar-gap"
+            class="relative h-full w-(--sidebar-width) bg-transparent transition-[width] duration-150 ease-in-out group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
+          >
+          </div>
+          <div
+            data-slot="sidebar-container"
+            data-side="left"
+            class="absolute inset-y-0 left-0 z-10 flex h-full w-(--sidebar-width) p-2 transition-[left,right,width] duration-150 ease-in-out group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
+          >
+            <div data-sidebar="sidebar" data-slot="sidebar-inner" class="flex size-full flex-col bg-sidebar">
+              <div data-slot="sidebar-header" data-sidebar="header" class="flex flex-col gap-2 p-2">
+                <ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">
+                  <li data-slot="sidebar-menu-item" data-sidebar="menu-item" class="group/menu-item relative">
+                    <div data-slot="sidebar-menu-button" data-sidebar="menu-button" data-size="lg" data-active="false" class={sidebarMenuButtonLg}>
+                      <div class="flex aspect-square size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-sidebar-primary text-sidebar-primary-foreground dark:bg-transparent">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" class="size-5 dark:hidden">
+                          <rect x="12" y="11" width="7" height="26" rx="2" fill="#2563EB"></rect>
+                          <path d="M 14,11 L 17,11 Q 19,11 20.1,12.7 L 34.9,35.3 Q 36,37 34,37 L 31,37 Q 29,37 27.9,35.3 L 13.1,12.7 Q 12,11 14,11 Z" fill="#1E3A8A"></path>
+                          <rect x="29" y="11" width="7" height="26" rx="2" fill="#60A5FA"></rect>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" class="hidden size-8 dark:block">
+                          <rect width="48" height="48" rx="11" fill="#FAFAF9"></rect>
+                          <rect x="12" y="11" width="7" height="26" rx="2" fill="#2563EB"></rect>
+                          <path d="M 14,11 L 17,11 Q 19,11 20.1,12.7 L 34.9,35.3 Q 36,37 34,37 L 31,37 Q 29,37 27.9,35.3 L 13.1,12.7 Q 12,11 14,11 Z" fill="#1E3A8A"></path>
+                          <rect x="29" y="11" width="7" height="26" rx="2" fill="#60A5FA"></rect>
+                        </svg>
+                      </div>
+                      <div class="grid flex-1 text-left text-sm leading-tight">
+                        <span class="truncate font-semibold">Novaix</span>
+                        <span class="truncate text-xs">管理后台</span>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div data-nx-scroll data-slot="sidebar-content" data-sidebar="content" class="no-scrollbar flex min-h-0 flex-1 flex-col gap-0 overflow-auto group-data-[collapsible=icon]:overflow-hidden">
+                {navGroups.map((group) => {
+                  const menu = (
+                    <ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">
+                      {group.items.map((item) => (
+                        <li data-slot="sidebar-menu-item" data-sidebar="menu-item" class="group/menu-item relative">
+                          <button
+                            type="button"
+                            data-slot="sidebar-menu-button"
+                            data-sidebar="menu-button"
+                            data-size="default"
+                            data-active={item.title === active ? "true" : "false"}
+                            data-nx-tip={item.title}
+                            data-nx-tip-side="right"
+                            data-nx-tip-collapsed
+                            class={sidebarMenuButton}
+                          >
+                            <Icon name={item.icon} />
+                            <span class="flex-1">{item.title}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                  return group.label ? (
+                    <div data-state="open" data-slot="collapsible" class="group/collapsible">
+                      <div data-slot="sidebar-group" data-sidebar="group" class="relative flex w-full min-w-0 flex-col p-2">
+                        <button type="button" data-nx-collapse aria-expanded="true" data-state="open" data-slot="sidebar-group-label" data-sidebar="group-label" class={sidebarGroupLabel}>
+                          {group.label}
+                          <Icon name="chevron-right" class="ml-auto transition-transform group-data-open/collapsible:rotate-90" />
+                        </button>
+                        <div data-state="open" data-slot="collapsible-content">
+                          <div data-slot="sidebar-group-content" data-sidebar="group-content" class="w-full text-sm">
+                            {menu}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div data-slot="sidebar-group" data-sidebar="group" class="relative flex w-full min-w-0 flex-col p-2">
+                      {menu}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div data-slot="sidebar-footer" data-sidebar="footer" class="flex flex-col gap-2 p-2">
+                <ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">
+                  <li data-slot="sidebar-menu-item" data-sidebar="menu-item" class="group/menu-item relative">
+                    <button type="button" data-sidebar="menu-button" data-size="lg" data-active="false" class={`${sidebarMenuButtonLg} data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground`}>
+                      <span data-slot="avatar" data-size="default" class="group/avatar relative flex size-8 h-8 w-8 shrink-0 rounded-lg select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken dark:after:mix-blend-lighten">
+                        <span data-slot="avatar-fallback" class="flex size-full items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">AD</span>
+                      </span>
+                      <div class="grid flex-1 text-left text-sm leading-tight">
+                        <span class="truncate font-medium">admin</span>
+                        <span class="truncate text-xs">admin@novaix.local</span>
+                      </div>
+                      <Icon name="chevrons-up-down" class="ml-auto size-4" />
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <main
+          data-slot="sidebar-inset"
+          class="relative m-2 ml-0 flex w-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-background shadow-sm peer-data-[state=collapsed]:ml-2"
+        >
+          <header class="flex h-14 shrink-0 items-center justify-between border-b px-4">
+            <div class="flex min-w-0 items-center gap-2 overflow-hidden">
+              <button type="button" data-nx-sidebar-trigger data-slot="sidebar-trigger" class={`${ghostButtonSm} -ml-1 shrink-0`}>
+                <Icon name="panel-left" />
+                <span class="sr-only">Toggle Sidebar</span>
+              </button>
+              <div data-orientation="vertical" role="none" data-slot="separator" class="mr-2 h-4 w-px shrink-0 bg-border"></div>
+              <nav aria-label="breadcrumb" data-slot="breadcrumb">
+                <ol data-slot="breadcrumb-list" class="flex flex-nowrap items-center gap-1.5 overflow-hidden text-sm whitespace-nowrap text-muted-foreground">
+                  {breadcrumb.map((label, i) => (
+                    <>
+                      {i > 0 && (
+                        <li role="presentation" aria-hidden="true" data-slot="breadcrumb-separator" class="[&>svg]:size-3.5">
+                          <Icon name="chevron-right" />
+                        </li>
+                      )}
+                      <li data-slot="breadcrumb-item" class="inline-flex items-center gap-1">
+                        <span data-slot="breadcrumb-page" class={i === breadcrumb.length - 1 ? "font-normal text-foreground" : ""}>{label}</span>
+                      </li>
+                    </>
+                  ))}
+                </ol>
+              </nav>
+            </div>
+            <div class="flex shrink-0 items-center gap-1">
+              {toolbar.map((t) => (
+                <button type="button" data-nx-tip={t.tip} data-nx-tip-side="bottom" class={t.button}>
+                  <Icon name={t.icon} class="size-4" />
+                </button>
+              ))}
+              <!-- 主题按钮跟随官网当前主题显示，复用 global.css 中 .theme-toggle 的图标切换规则 -->
+              <button type="button" data-nx-tip="" data-nx-tip-theme data-nx-tip-side="bottom" class={`theme-toggle ${ghostButton}`}>
+                <Icon name="sun" class="size-4" data-icon="light" />
+                <Icon name="moon" class="size-4" data-icon="dark" />
+                <Icon name="monitor" class="size-4" data-icon="auto" />
+                <span class="sr-only">切换主题</span>
+              </button>
+            </div>
+          </header>
+          <div data-nx-scroll class="flex min-h-0 flex-1 flex-col overflow-auto">
+            <slot />
+            <div class="h-6 shrink-0"></div>
+          </div>
+        </main>
+      </div>
+
+      <!-- 提示框（新手教程、侧边栏收起后的菜单名等共用） -->
+      <div
+        data-nx-tooltip
+        hidden
+        class="pointer-events-none absolute z-50 inline-flex w-fit items-center rounded-md bg-foreground px-3 py-1.5 text-xs whitespace-nowrap text-background"
+      >
+        <span data-nx-tooltip-text></span>
+        <span data-nx-tooltip-arrow class="absolute size-2.5 rounded-[2px] bg-foreground"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .nx-frame-inner {
+    transform: scale(var(--nx-s));
+    transform-origin: 0 0;
+  }
+
+  /* 未点击外框前，滚轮交给页面本身，避免访客浏览时被演示区域"卡住" */
+  .nx-frame:not([data-active]) [data-nx-scroll] {
+    overflow: hidden !important;
+  }
+</style>
+
+<script>
+  import { initAdminFrame } from "./admin-frame";
+
+  document.querySelectorAll<HTMLElement>("[data-nx-frame]").forEach(initAdminFrame);
+</script>
