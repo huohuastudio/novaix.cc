@@ -1,0 +1,31 @@
+---
+// 展台中浮起的关键部件。坐标为后台界面坐标（含浏览器标题栏，宽 1280），随展台一起缩放。
+interface Props {
+  /** 左上角位置与宽度（后台像素） */
+  x: number;
+  y: number;
+  w: number;
+  /** 浮起高度（px），越大越靠近观看者 */
+  z?: number;
+  /** 额外放大倍数，让关键部件比底图更清晰 */
+  scale?: number;
+  /** 缩放与浮起的基准点 */
+  origin?: string;
+  /** 圆角，用于高亮描边贴合部件外形 */
+  radius?: string;
+  /** 进场动画顺序 */
+  order?: number;
+}
+
+const { x, y, w, z = 60, scale = 1, origin = "50% 50%", radius = "0.875rem", order = 0 } = Astro.props;
+---
+
+<div
+  class="tour-float"
+  data-tour-float
+  style={`left:${x}px;top:${y}px;width:${w}px;--z:${z}px;--fs:${scale};--fo:${origin};--fr:${radius};--i:${order}`}
+>
+  <div class="tour-float-body nx-app">
+    <slot />
+  </div>
+</div>

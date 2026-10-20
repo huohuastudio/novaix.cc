@@ -1,0 +1,181 @@
+---
+// 网络管理：IP 池管理列表（ui/src/pages/admin/ips/index.tsx）+ 浮起的「创建 VPC」对话框（pages/admin/vpcs/index.tsx 中的 VpcCreateDialog）
+import TourStage from "../TourStage.astro";
+import TourFloat from "../TourFloat.astro";
+import Icon from "../../demo/Icon.astro";
+import PageHeader from "../kit/PageHeader.astro";
+import SortHead from "../kit/SortHead.astro";
+import Pagination from "../kit/Pagination.astro";
+import SelectTrigger from "../kit/SelectTrigger.astro";
+import { badge, button, dialogContent, dialogFooter, dialogHeader, dialogTitle, input, label, rowAction, rowActionDanger, table, tableBody, tableCell, tableHeader, tableRow, textarea } from "../ui";
+import HelpButton from "../kit/HelpButton.astro";
+import DialogClose from "../kit/DialogClose.astro";
+
+interface Props {
+  initial?: boolean;
+}
+
+const { initial } = Astro.props;
+
+interface Pool {
+  id: number;
+  name: string;
+  description: string;
+  type: "ipv4" | "ipv6";
+  cidr: string;
+  gateway: string;
+  /** 绑定节点；未绑定时显示「待确认」 */
+  node: string | null;
+  mode: "sequential" | "random" | "on_demand";
+  used: number;
+  total: number;
+  at: string;
+}
+
+const modeLabel: Record<Pool["mode"], string> = { sequential: "顺序", random: "随机", on_demand: "按需" };
+
+const pools: Pool[] = [
+  { id: 14, name: "香港 CN2 IPv4", description: "香港 CN2 GIA 精品线路", type: "ipv4", cidr: "103.151.172.0/24", gateway: "103.151.172.1", node: "HK-01", mode: "sequential", used: 214, total: 250, at: "2026/10/18 16:42" },
+  { id: 13, name: "香港 IPv6", description: "香港 CN2 原生 IPv6", type: "ipv6", cidr: "2001:db8:1a00::/48", gateway: "2001:db8:1a00::1", node: "HK-01", mode: "on_demand", used: 186, total: 186, at: "2026/10/18 16:40" },
+  { id: 12, name: "香港 BGP IPv4", description: "香港 BGP 三网直连", type: "ipv4", cidr: "103.151.173.0/24", gateway: "103.151.173.1", node: "HK-02", mode: "random", used: 167, total: 250, at: "2026/09/26 10:15" },
+  { id: 11, name: "东京 IPv4", description: "东京软银线路", type: "ipv4", cidr: "45.207.36.0/25", gateway: "45.207.36.1", node: "JP-02", mode: "sequential", used: 98, total: 120, at: "2026/09/12 14:28" },
+  { id: 10, name: "东京 IPv6", description: "东京软银原生 IPv6", type: "ipv6", cidr: "2001:db8:3c00::/48", gateway: "2001:db8:3c00::1", node: "JP-02", mode: "on_demand", used: 73, total: 73, at: "2026/09/12 14:26" },
+  { id: 9, name: "新加坡 IPv4", description: "新加坡 BGP 线路", type: "ipv4", cidr: "45.207.40.0/25", gateway: "45.207.40.1", node: "SG-01", mode: "sequential", used: 61, total: 120, at: "2026/08/30 09:47" },
+  { id: 8, name: "洛杉矶 IPv4", description: "洛杉矶 CN2 GIA", type: "ipv4", cidr: "23.249.18.0/24", gateway: "23.249.18.1", node: "US-01", mode: "random", used: 132, total: 250, at: "2026/08/21 20:06" },
+  { id: 7, name: "香港 CN2 扩容段", description: "备用地址段，暂未绑定节点", type: "ipv4", cidr: "103.151.174.0/26", gateway: "103.151.174.1", node: null, mode: "sequential", used: 0, total: 61, at: "2026/08/12 15:20" },
+];
+
+/** 高亮 IPv6 支持的那一行 */
+const ipv6Row = 1;
+
+const td = tableCell();
+// FormLabel：label 基础 class + 错误态
+const formLabel = label("data-[error=true]:text-destructive");
+---
+
+<TourStage id="network" active="IP 池管理" breadcrumb={["IP 池管理"]} path="/admin/ips" initial={initial}>
+  <div class="space-y-6 px-6 pt-6">
+    <PageHeader title="IP 池管理" description="管理 IPv4/IPv6 地址池" />
+
+    <div class="flex flex-col gap-4">
+      <div class="flex shrink-0 flex-wrap items-center gap-3">
+        <input data-slot="input" class={input("h-8 w-[200px] min-w-0 flex-none")} placeholder="搜索名称/CIDR..." />
+        <div class="ml-auto">
+          <button type="button" data-slot="button" class={button("default")}><Icon name="plus" class="size-4" />创建 IP 池</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-md transition-opacity duration-300">
+        <table class={table("min-w-[800px]")}>
+          <thead data-slot="table-header" class={tableHeader()}>
+            <tr data-slot="table-row" class={tableRow()}>
+              <SortHead sortable>ID</SortHead>
+              <SortHead sortable>名称</SortHead>
+              <SortHead sortable>类型</SortHead>
+              <SortHead sortable>CIDR</SortHead>
+              <SortHead sortable>网关</SortHead>
+              <SortHead>绑定节点</SortHead>
+              <SortHead>分配策略</SortHead>
+              <SortHead>IP 使用</SortHead>
+              <SortHead sortable>创建时间</SortHead>
+              <SortHead>操作</SortHead>
+            </tr>
+          </thead>
+          <tbody data-slot="table-body" class={tableBody()}>
+            {pools.map((p, i) => {
+              // IPv6 行的每个单元格标记 ipv6，合并后即整行高亮
+              const target = i === ipv6Row ? "ipv6" : undefined;
+              return (
+                <tr data-slot="table-row" data-tour-target="pools" class={tableRow("tour-a-rise cursor-pointer")} style={`--i:${i}`}>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}>{p.id}</td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}>
+                    <div>
+                      <span class="font-medium">{p.name}</span>
+                      <p class="mt-0.5 text-xs text-muted-foreground">{p.description}</p>
+                    </div>
+                  </td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}>
+                    <span data-slot="badge" class={badge("outline")}>{p.type.toUpperCase()}</span>
+                  </td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}><span class="font-mono text-sm">{p.cidr}</span></td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}><span class="font-mono text-sm">{p.gateway}</span></td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}>
+                    {p.node ? (
+                      <span data-slot="badge" class={badge("secondary")}>{p.node}</span>
+                    ) : (
+                      <span data-slot="badge" class={badge("outline", "text-muted-foreground")}>待确认</span>
+                    )}
+                  </td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}>
+                    <span data-slot="badge" class={badge("outline")}>{modeLabel[p.mode]}</span>
+                  </td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}>
+                    {/* 三个 span 写在同一行：后台为 JSX，相邻元素之间没有空白 */}
+                    <div class="text-sm"><span class="font-medium text-primary">{p.used}</span><span class="text-muted-foreground"> / {p.total}</span><span class="ml-1 text-xs text-muted-foreground">({p.total - p.used} 空闲)</span></div>
+                  </td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}>{p.at}</td>
+                  <td data-slot="table-cell" class={td} data-tour-target={target}>
+                    <div class="flex items-center gap-1">
+                      {p.mode !== "on_demand" && (
+                        <button type="button" data-slot="tooltip-trigger" class={rowAction}><Icon name="zap" class="size-4" /></button>
+                      )}
+                      <button type="button" data-slot="tooltip-trigger" class={rowAction}><Icon name="pencil" class="size-4" /></button>
+                      <button type="button" data-slot="tooltip-trigger" class={rowActionDanger}><Icon name="trash-2" class="size-4" /></button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <Pagination total={pools.length} />
+    </div>
+  </div>
+
+  <Fragment slot="floats">
+    <!-- 创建 VPC 对话框：放在页面右侧偏中，盖住时间与操作列，左侧的地址与 IPv6 信息保持可见 -->
+    <TourFloat x={720} y={200} w={512} z={110} scale={1.15} origin="0 50%" radius="0.875rem">
+      <div role="dialog" data-slot="dialog-content" data-tour-target="vpc" class={dialogContent("relative")}>
+        <div data-slot="dialog-header" class={dialogHeader()}>
+          <h2 data-slot="dialog-title" class={dialogTitle()}>创建 VPC</h2>
+        </div>
+        <form class="space-y-4">
+          <div data-slot="form-item" class="grid content-start gap-2">
+            <label data-slot="form-label" data-error="false" class={formLabel}>用户<span class="ml-0.5 text-destructive">*</span></label>
+            <button type="button" role="combobox" aria-expanded="false" aria-haspopup="dialog" data-state="closed" data-slot="popover-trigger" class={button("field", "default", "w-full min-w-0 justify-between pr-2 pl-2.5")}>
+              <div class="flex items-center gap-2 truncate">
+                <Icon name="user" class="size-4 shrink-0 text-muted-foreground" />zhangsan (zhangsan@example.com) — 余额: ¥1280.00
+              </div>
+              <Icon name="chevrons-up-down" class="size-4 shrink-0 opacity-50" />
+            </button>
+          </div>
+          <div data-slot="form-item" class="grid content-start gap-2">
+            <label data-slot="form-label" data-error="false" class={formLabel}>名称<span class="ml-0.5 text-destructive">*</span></label>
+            <input data-slot="form-control" class={input()} placeholder="my-vpc" value="prod-vpc" />
+          </div>
+          <div data-slot="form-item" class="grid content-start gap-2">
+            <label data-slot="form-label" data-error="false" class={formLabel}>节点组<span class="ml-0.5 text-destructive">*</span></label>
+            <SelectTrigger value="香港集群" />
+          </div>
+          <div data-slot="form-item" class="grid content-start gap-2">
+            <div class="flex items-center gap-1.5">
+              <label data-slot="form-label" data-error="false" class={formLabel}>网段 (CIDR)<span class="ml-0.5 text-destructive">*</span></label>
+              <HelpButton />
+            </div>
+            <input data-slot="form-control" class={input()} placeholder="10.0.0.0/16" value="10.0.0.0/16" />
+          </div>
+          <div data-slot="form-item" class="grid content-start gap-2">
+            <label data-slot="form-label" data-error="false" class={formLabel}>描述</label>
+            <textarea data-slot="form-control" class={textarea()} rows="2" placeholder="可选描述信息"></textarea>
+          </div>
+          <div data-slot="dialog-footer" class={dialogFooter()}>
+            <button type="submit" data-slot="button" class={button("default")}>创建</button>
+          </div>
+        </form>
+        <DialogClose />
+      </div>
+    </TourFloat>
+  </Fragment>
+</TourStage>

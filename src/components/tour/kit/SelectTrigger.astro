@@ -1,0 +1,26 @@
+---
+// 下拉选择框的触发按钮（后台 SelectTrigger）。未选值时显示占位文字
+import Icon from "../../demo/Icon.astro";
+import { selectTrigger } from "../ui";
+
+interface Props {
+  value?: string;
+  placeholder?: string;
+  class?: string;
+}
+
+const { value, placeholder, class: className } = Astro.props;
+---
+
+<button
+  type="button"
+  role="combobox"
+  data-state="closed"
+  data-placeholder={value ? undefined : ""}
+  data-slot="select-trigger"
+  data-size="default"
+  class={selectTrigger(className)}
+>
+  <span data-slot="select-value">{value ?? placeholder}</span>
+  <Icon name="chevrons-up-down" class="pointer-events-none size-4 text-muted-foreground" />
+</button>

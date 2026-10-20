@@ -1,0 +1,12 @@
+---
+// 表格多选框（未勾选状态）
+import { checkbox } from "../ui";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<button type="button" role="checkbox" aria-checked="false" data-state="unchecked" data-slot="checkbox" class={checkbox(className)}></button>

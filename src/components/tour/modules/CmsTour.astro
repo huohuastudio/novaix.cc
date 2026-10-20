@@ -1,0 +1,372 @@
+---
+// 站点建设：内容管理入口页（ui/src/pages/admin/cms/index.tsx）+ 浮起的主题卡片（pages/admin/themes/index.tsx 的 ThemeCard，当前使用状态）
+import TourStage from "../TourStage.astro";
+import TourFloat from "../TourFloat.astro";
+import Icon from "../../demo/Icon.astro";
+import { badge, button } from "../ui";
+import HelpButton from "../kit/HelpButton.astro";
+
+interface Props {
+  initial?: boolean;
+}
+
+const { initial } = Astro.props;
+
+interface CmsItem {
+  label: string;
+  description: string;
+  icon: string;
+}
+
+interface CmsGroup {
+  label: string;
+  items: CmsItem[];
+  /** 功能点高亮目标 */
+  target?: string;
+}
+
+// 与后台 cmsGroups 一致（授权版，团队成员与品牌素材均显示）
+const groups: CmsGroup[] = [
+  {
+    label: "文章与页面",
+    items: [
+      { label: "公告管理", description: "发布和管理站点公告", icon: "megaphone" },
+      { label: "文章管理", description: "新闻、资讯、活动等文章及分类", icon: "file-text" },
+      { label: "单页面", description: "关于我们、服务条款等静态页面", icon: "file" },
+    ],
+  },
+  {
+    label: "客户支持",
+    items: [
+      { label: "帮助中心", description: "帮助文档分类与文章", icon: "circle-question-mark" },
+      { label: "常见问题", description: "FAQ 常见问题列表", icon: "circle-question-mark" },
+    ],
+  },
+  {
+    label: "营销素材",
+    items: [
+      { label: "轮播图", description: "首页及各位置的轮播横幅", icon: "image" },
+      { label: "合作伙伴", description: "合作伙伴 Logo 与信息", icon: "handshake" },
+      { label: "客户评价", description: "客户推荐与评价展示", icon: "message-square-quote" },
+      { label: "友情链接", description: "友情链接和外部链接", icon: "link" },
+    ],
+  },
+  {
+    // 「单页面」与「导航菜单」合并后的高亮框几乎覆盖整页，只标导航菜单所在分组
+    label: "站点配置",
+    target: "pages",
+    items: [
+      { label: "导航菜单", description: "网站导航菜单结构", icon: "navigation" },
+      { label: "更新日志", description: "产品更新日志", icon: "history" },
+      { label: "团队成员", description: "团队成员展示信息", icon: "users-round" },
+      { label: "品牌素材", description: "品牌 Logo 与素材文件", icon: "gem" },
+    ],
+  },
+];
+
+// 入口依次上浮的序号
+let seq = 0;
+const indexed = groups.map((g) => ({ ...g, items: g.items.map((item) => ({ ...item, i: seq++ })) }));
+
+const theme = {
+  name: "默认主题",
+  version: "1.0.0",
+  description: "简洁的官网主题，内置首页、选购页与帮助中心，支持深浅色切换",
+  author: "Novaix",
+};
+---
+
+<TourStage id="cms" active="内容管理" breadcrumb={["内容管理"]} path="/admin/cms" initial={initial}>
+  <div class="flex-1 overflow-y-auto px-6 pt-6">
+    <div class="flex items-center gap-2">
+      <h1 class="text-2xl font-bold tracking-tight">内容管理</h1>
+      <HelpButton />
+    </div>
+    <p class="mt-1 text-sm text-muted-foreground">管理站点内容，供第三方主题动态渲染</p>
+
+    <div class="mt-8 space-y-10" data-tour-target="modules">
+      {indexed.map((group) => (
+        <section data-tour-target={group.target}>
+          <h3 class="mb-4 text-base font-semibold">{group.label}</h3>
+          <div class="grid grid-cols-3 gap-x-6 gap-y-4">
+            {group.items.map((item) => (
+              <a class="group tour-a-rise -m-3 flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-muted/50" style={`--i:${item.i}`}>
+                <div class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground transition-colors group-hover:text-foreground">
+                  <Icon name={item.icon} class="size-4" />
+                </div>
+                <div class="min-w-0">
+                  <div class="text-sm font-medium text-primary group-hover:underline">{item.label}</div>
+                  <div class="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.description}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+
+  <Fragment slot="floats">
+    <!-- 主题管理中当前使用的主题卡片：摆在右下角，只压住第三列的两个入口，不挡左侧的导航菜单 -->
+    <TourFloat x={886} y={492} w={376} z={100} scale={1.2} origin="100% 100%" radius="0.5rem">
+      <div class="overflow-hidden rounded-md border ring-2 ring-primary" data-tour-target="theme">
+        <div class="relative flex h-40 items-center justify-center bg-muted">
+          <!-- 主题预览图：CSS 绘制的站点首页缩略图（按 2 倍尺寸排版后缩小，相当于一张截图） -->
+          <div class="cms-shot" aria-hidden="true">
+            <div class="cms-shot-page">
+              <div class="cms-shot-nav">
+                <span class="cms-shot-logo"><i></i>你的品牌</span>
+                <span class="cms-shot-links"><span>云服务器</span><span>价格</span><span>帮助中心</span><span>关于我们</span></span>
+              </div>
+              <div class="cms-shot-hero">
+                <span class="cms-shot-pill"><i></i>香港 CN2 GIA 线路上线</span>
+                <div class="cms-shot-title">高性能云服务器<br /><em>秒级开通，按需付费</em></div>
+                <p class="cms-shot-sub">覆盖香港、东京、新加坡等 12 个可用区</p>
+                <div class="cms-shot-cta">
+                  <span class="cms-shot-btn">立即选购</span>
+                  <span class="cms-shot-ghost">查看价格 →</span>
+                </div>
+              </div>
+              <div class="cms-shot-plan cms-shot-plan-back">
+                <span class="cms-shot-plan-rows"><i style="width:56%"></i><i style="width:80%"></i><i style="width:64%"></i><i style="width:72%"></i></span>
+              </div>
+              <div class="cms-shot-plan">
+                <span class="cms-shot-plan-region">香港 CN2 · 2核4G</span>
+                <span class="cms-shot-plan-price">¥39<small>/月</small></span>
+                <span class="cms-shot-plan-rows"><i style="width:78%"></i><i style="width:62%"></i><i style="width:70%"></i></span>
+                <span class="cms-shot-plan-btn">立即购买</span>
+              </div>
+            </div>
+          </div>
+          <span data-slot="badge" class={badge("default", "absolute top-2 right-2")}><Icon name="check" class="mr-1 size-3" />当前使用</span>
+        </div>
+        <div class="space-y-2 p-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-sm font-medium">{theme.name}</span>
+            <span class="text-xs text-muted-foreground">v{theme.version}</span>
+          </div>
+          <p class="line-clamp-2 text-xs text-muted-foreground">{theme.description}</p>
+          <div class="text-xs text-muted-foreground">{theme.author}</div>
+          <div class="flex items-center gap-2 pt-1">
+            <button type="button" data-slot="button" class={button("ghost", "sm", "text-destructive hover:text-destructive")}>
+              <Icon name="trash-2" class="size-3.5" />卸载
+            </button>
+          </div>
+        </div>
+      </div>
+    </TourFloat>
+  </Fragment>
+</TourStage>
+
+<style>
+  /* 主题预览图：不是后台 UI，按截图处理，颜色固定、不随深浅色切换 */
+  .cms-shot {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(60% 90% at 82% 18%, rgba(47, 107, 255, 0.55), transparent 70%),
+      radial-gradient(40% 60% at 100% 0%, rgba(139, 92, 246, 0.45), transparent 70%),
+      linear-gradient(160deg, #080d1f 0%, #0c1533 55%, #111d45 100%);
+  }
+
+  /* 网格底纹，向四周淡出 */
+  .cms-shot::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 12px 12px;
+    mask-image: radial-gradient(70% 80% at 75% 40%, #000 20%, transparent 75%);
+  }
+
+  /* 按 2 倍尺寸排版后缩小一半，避开浏览器最小字号限制 */
+  .cms-shot-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    transform: scale(0.5);
+    transform-origin: 0 0;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .cms-shot-nav {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+    height: 44px;
+    padding: 0 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .cms-shot-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .cms-shot-logo i {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #6aa5ff, #2f6bff 60%, #7c3aed);
+    box-shadow: 0 0 12px rgba(47, 107, 255, 0.8);
+  }
+
+  .cms-shot-links {
+    display: inline-flex;
+    gap: 22px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .cms-shot-hero {
+    position: absolute;
+    top: 76px;
+    left: 28px;
+    width: 380px;
+  }
+
+  .cms-shot-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 24px;
+    padding: 0 11px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .cms-shot-pill i {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #2ee6ff;
+    box-shadow: 0 0 8px #2ee6ff;
+  }
+
+  .cms-shot-title {
+    margin-top: 16px;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+  }
+
+  .cms-shot-title em {
+    font-style: normal;
+    background: linear-gradient(90deg, #6aa5ff, #2ee6ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .cms-shot-sub {
+    margin-top: 12px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .cms-shot-cta {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .cms-shot-btn {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: #fff;
+    color: #0c1533;
+  }
+
+  .cms-shot-ghost {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* 右侧悬浮的套餐卡片 */
+  .cms-shot-plan {
+    position: absolute;
+    top: 96px;
+    left: 480px;
+    display: flex;
+    flex-direction: column;
+    width: 196px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    background: linear-gradient(160deg, #26345f, #151f42);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 24px 50px -12px rgba(0, 0, 0, 0.7);
+  }
+
+  /* 后一张只从右侧露出边缘 */
+  .cms-shot-plan-back {
+    top: 122px;
+    left: 590px;
+    opacity: 0.5;
+    transform: rotate(8deg);
+  }
+
+  .cms-shot-plan-region {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .cms-shot-plan-price {
+    margin-top: 6px;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .cms-shot-plan-price small {
+    margin-left: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .cms-shot-plan-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin: 14px 0 16px;
+  }
+
+  .cms-shot-plan-rows i {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .cms-shot-plan-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    border-radius: 9px;
+    background: #2f6bff;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 6px 16px -4px rgba(47, 107, 255, 0.8);
+  }
+</style>

@@ -1,0 +1,39 @@
+---
+// 产品能力展台的单个模块：倾斜放置的后台界面 + 浮起的关键部件。
+// 默认插槽为后台页面内容，floats 插槽放 TourFloat。页面中用 data-tour-target 标记可被功能点高亮的区域。
+// 其余 props（active、breadcrumb、path、taskCount 等）原样传给后台外框。
+import type { ComponentProps } from "astro/types";
+import AdminFrame from "../demo/AdminFrame.astro";
+import { CHROME_HEIGHT } from "../demo/admin-frame";
+import { TOUR_HEIGHT, TOUR_WIDTH } from "./tour";
+
+type Props = Omit<ComponentProps<typeof AdminFrame>, "collapsed" | "static" | "width" | "height" | "class"> & {
+  /** 模块 id，与 ProductTour 中的列表项对应 */
+  id: string;
+  /** 初始显示的模块；其余模块先隐藏，切换时由脚本显示 */
+  initial?: boolean;
+};
+
+const { id, initial = false, ...frame } = Astro.props;
+---
+
+<div class="tour-stage" data-tour-stage={id} data-active={initial ? "" : undefined} hidden={!initial} inert>
+  <div class="tour-rig">
+    <div class="tour-lift">
+      <AdminFrame
+        {...frame}
+        collapsed
+        static
+        width={TOUR_WIDTH}
+        height={TOUR_HEIGHT}
+        class="tour-window rounded-xl ring-1 ring-black/[0.08] dark:ring-white/10"
+      >
+        <slot />
+        <div slot="overlay" class="tour-spot" data-tour-spot></div>
+      </AdminFrame>
+      <div class="tour-floats" style={`width:${TOUR_WIDTH}px;height:${TOUR_HEIGHT + CHROME_HEIGHT}px`}>
+        <slot name="floats" />
+      </div>
+    </div>
+  </div>
+</div>

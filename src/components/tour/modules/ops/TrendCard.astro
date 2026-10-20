@@ -1,0 +1,89 @@
+---
+// 趋势图卡片：后台 components/chart-card.tsx（ChartCard + ChartLegend）内放 recharts AreaChart 的同款 SVG
+import Icon from "../../../demo/Icon.astro";
+import { CHART_H, CHART_W, type TrendChart } from "./metrics";
+
+interface Props {
+  title: string;
+  icon: string;
+  chart: TrendChart;
+  legend?: { color: string; label: string }[];
+  /** 进场动画顺序 */
+  order?: number;
+  [attr: string]: unknown;
+}
+
+const { title, icon, chart, legend, order = 0, ...rest } = Astro.props;
+const gradients = chart.series.filter((s) => s.gradient);
+const tick = { stroke: "none", "font-size": "12", fill: "var(--color-muted-foreground)", class: "recharts-text recharts-cartesian-axis-tick-value" };
+---
+
+<div class="rounded-xl border bg-card p-4 space-y-3" {...rest}>
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <Icon name={icon} class="size-4 text-muted-foreground" />
+      <h4 class="text-xs font-medium">{title}</h4>
+    </div>
+    {
+      legend && (
+        <div class="flex items-center gap-3 text-2xs text-muted-foreground">
+          {legend.map((item) => (
+            <span class="flex items-center gap-1.5">
+              <span class="inline-block h-0.5 w-3 rounded-full" style={`background-color: ${item.color};`} />
+              {item.label}
+            </span>
+          ))}
+        </div>
+      )
+    }
+  </div>
+  <div class="h-52 min-h-0 min-w-0">
+    <div class="recharts-wrapper" style={`position: relative; cursor: default; width: ${CHART_W}px; height: ${CHART_H}px;`}>
+      <svg class="recharts-surface" width={CHART_W} height={CHART_H} viewBox={`0 0 ${CHART_W} ${CHART_H}`} style="width: 100%; height: 100%; display: block;">
+        <g class="recharts-cartesian-grid">
+          {chart.grid.map((y) => <line stroke-dasharray="3 3" class="stroke-border/50" stroke="#ccc" fill="none" x1={chart.plotLeft} y1={y} x2={chart.plotRight} y2={y} />)}
+        </g>
+        {
+          gradients.length > 0 && (
+            <defs>
+              {gradients.map((s) => (
+                <linearGradient id={s.gradient} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stop-color={s.color} stop-opacity="0.15" />
+                  <stop offset="95%" stop-color={s.color} stop-opacity="0" />
+                </linearGradient>
+              ))}
+            </defs>
+          )
+        }
+        {
+          chart.series.map((s, k) => (
+            <g class="recharts-layer recharts-area">
+              {s.gradient && (
+                <path class="recharts-curve recharts-area-area tour-a-fade" style={`--i:${order * 2 + k + 6}`} stroke-width="1.5" fill={`url(#${s.gradient})`} fill-opacity="0.6" stroke="none" d={s.area} />
+              )}
+              <path class="recharts-curve recharts-area-curve tour-a-draw" style={`--i:${order * 2 + k}`} pathLength="1" stroke-width="1.5" fill="none" fill-opacity="0.6" stroke={s.color} d={s.line} />
+            </g>
+          ))
+        }
+        <g class="recharts-cartesian-axis-tick-labels recharts-xAxis-tick-labels">
+          {
+            chart.xTicks.map((t) => (
+              <text {...tick} x={t.x} y="186" text-anchor="middle">
+                <tspan x={t.x} dy="0.71em">{t.label}</tspan>
+              </text>
+            ))
+          }
+        </g>
+        <g class="recharts-cartesian-axis-tick-labels recharts-yAxis-tick-labels">
+          {
+            chart.yTicks.map((t) => (
+              <text {...tick} x={t.x} y={t.y} text-anchor="end">
+                <tspan x={t.x} dy="0.355em">{t.label}</tspan>
+              </text>
+            ))
+          }
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>

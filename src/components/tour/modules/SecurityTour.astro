@@ -1,0 +1,218 @@
+---
+// 安全认证：用户管理列表（ui/src/pages/admin/users/index.tsx）+ 浮起的启用二次验证对话框（pages/portal/profile/index.tsx 中的 TOTP 设置）
+import TourStage from "../TourStage.astro";
+import TourFloat from "../TourFloat.astro";
+import Icon from "../../demo/Icon.astro";
+import SelectTrigger from "../kit/SelectTrigger.astro";
+import SortHead from "../kit/SortHead.astro";
+import Pagination from "../kit/Pagination.astro";
+import { badge, type BadgeVariant, button, dialogContent, dialogFooter, dialogHeader, dialogTitle, input, label, rowAction, rowActionDanger, table, tableBody, tableCell, tableHeader, tableRow } from "../ui";
+import { QR_MODULES, QR_PATH, QR_SECRET } from "./security/qr";
+import HelpButton from "../kit/HelpButton.astro";
+import DialogClose from "../kit/DialogClose.astro";
+
+interface Props {
+  initial?: boolean;
+}
+
+const { initial } = Astro.props;
+
+// 与后台 lib/user-constants.ts 的 roleMap 一致
+const roleMap: Record<string, { label: string; variant: BadgeVariant }> = {
+  admin: { label: "管理员", variant: "default" },
+  agent: { label: "代理商", variant: "secondary" },
+  user: { label: "用户", variant: "outline" },
+};
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  phone: string;
+  role: keyof typeof roleMap;
+  status: 0 | 1;
+  balance: string;
+  kyc: boolean;
+  at: string;
+}
+
+const users: User[] = [
+  { id: 2186, username: "zhangsan", email: "zhangsan@qq.com", phone: "13812346608", role: "user", status: 1, balance: "¥128.50", kyc: true, at: "2026/10/20 14:35" },
+  { id: 2185, username: "lisi", email: "lisi@163.com", phone: "", role: "agent", status: 1, balance: "¥3260.00", kyc: true, at: "2026/10/20 13:52" },
+  { id: 2184, username: "wangwu", email: "wangwu@gmail.com", phone: "15921887430", role: "user", status: 1, balance: "¥0.00", kyc: false, at: "2026/10/20 11:08" },
+  { id: 2183, username: "zhaoliu", email: "zhaoliu@126.com", phone: "18627450913", role: "user", status: 1, balance: "¥56.00", kyc: true, at: "2026/10/20 09:41" },
+  { id: 2182, username: "chenqi", email: "chenqi@foxmail.com", phone: "13671029584", role: "admin", status: 1, balance: "¥0.00", kyc: true, at: "2026/10/19 22:17" },
+  { id: 2181, username: "demo", email: "demo@foxmail.com", phone: "", role: "user", status: 1, balance: "¥20.00", kyc: false, at: "2026/10/19 20:06" },
+  { id: 2180, username: "test01", email: "test01@126.com", phone: "17702153368", role: "user", status: 0, balance: "¥0.00", kyc: false, at: "2026/10/19 17:30" },
+  { id: 2179, username: "sunba", email: "sunba@qq.com", phone: "13915508726", role: "agent", status: 1, balance: "¥1280.00", kyc: true, at: "2026/10/19 15:12" },
+  { id: 2178, username: "zhoujiu", email: "", phone: "18810374452", role: "user", status: 1, balance: "¥9.90", kyc: true, at: "2026/10/19 11:45" },
+  { id: 2177, username: "wushi", email: "wushi@gmail.com", phone: "", role: "user", status: 1, balance: "¥150.00", kyc: false, at: "2026/10/19 10:03" },
+  { id: 2176, username: "liuyang", email: "liuyang@163.com", phone: "15002168891", role: "user", status: 1, balance: "¥399.00", kyc: true, at: "2026/10/18 21:38" },
+  { id: 2175, username: "huangli", email: "huangli@qq.com", phone: "13560237719", role: "user", status: 1, balance: "¥12.00", kyc: false, at: "2026/10/18 16:24" },
+  { id: 2174, username: "xuming", email: "xuming@qq.com", phone: "", role: "user", status: 1, balance: "¥88.00", kyc: true, at: "2026/10/18 14:09" },
+];
+
+const td = tableCell();
+const kycVerified = badge("default", "bg-emerald-600");
+const kycNone = badge("outline", "text-muted-foreground");
+
+// 启用二次验证对话框：验证码已输入 4 位，光标停在第 5 位
+const code = "4827";
+const otpSlot =
+  "relative flex size-10 items-center justify-center border-y border-r border-input text-base transition-all outline-none first:rounded-l-lg first:border-l last:rounded-r-lg aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:border-ring data-[active=true]:ring-3 data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:border-destructive data-[active=true]:aria-invalid:ring-destructive/20 dark:bg-input/30 dark:data-[active=true]:aria-invalid:ring-destructive/40";
+---
+
+<TourStage id="security" active="用户管理" breadcrumb={["用户管理"]} path="/admin/users" initial={initial}>
+  <div class="space-y-6 px-6 pt-6">
+    <div class="shrink-0">
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl font-bold tracking-tight">用户管理</h1>
+        <HelpButton />
+      </div>
+      <p class="mt-1 text-sm text-muted-foreground">管理系统中的所有用户账号</p>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex shrink-0 flex-wrap items-center gap-3">
+        <input data-slot="input" class={input("h-8 w-[200px] min-w-0 flex-none")} placeholder="搜索用户名/邮箱..." />
+        <SelectTrigger placeholder="角色" class="h-8 w-[150px] min-w-0" />
+        <SelectTrigger placeholder="状态" class="h-8 w-[150px] min-w-0" />
+        <div class="ml-auto">
+          <div class="flex gap-2">
+            <button type="button" data-slot="button" class={button("default")}><Icon name="plus" class="size-4" />添加用户</button>
+            <button type="button" data-slot="dropdown-menu-trigger" class={button("outline")}><Icon name="download" data-icon="inline-start" class="size-4" />导出</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-md transition-opacity duration-300">
+        <table class={table("min-w-[800px]")}>
+          <thead data-slot="table-header" class={tableHeader()}>
+            <tr data-slot="table-row" class={tableRow()}>
+              <SortHead sortable>ID</SortHead>
+              <SortHead sortable>用户名</SortHead>
+              <SortHead sortable>邮箱</SortHead>
+              <SortHead>手机号</SortHead>
+              <SortHead>角色</SortHead>
+              <SortHead>状态</SortHead>
+              <SortHead sortable>余额</SortHead>
+              <SortHead data-tour-target="kyc">实名</SortHead>
+              <SortHead sortable>注册时间</SortHead>
+              <SortHead>操作</SortHead>
+            </tr>
+          </thead>
+          <tbody data-slot="table-body" class={tableBody()}>
+            {users.map((u, i) => (
+              <tr data-slot="table-row" class={tableRow("tour-a-rise")} style={`--i:${i}`}>
+                <td data-slot="table-cell" class={td}>{u.id}</td>
+                <td data-slot="table-cell" class={td}>
+                  <a class="font-medium text-primary hover:underline">{u.username}</a>
+                </td>
+                <td data-slot="table-cell" class={td}>{u.email || <span class="text-muted-foreground">—</span>}</td>
+                <td data-slot="table-cell" class={td}>{u.phone || <span class="text-muted-foreground">—</span>}</td>
+                <td data-slot="table-cell" class={td}>
+                  <span data-slot="badge" class={badge(roleMap[u.role].variant)}>{roleMap[u.role].label}</span>
+                </td>
+                <td data-slot="table-cell" class={td}>
+                  <span data-slot="badge" class={badge(u.status === 1 ? "default" : "secondary")}>{u.status === 1 ? "正常" : "禁用"}</span>
+                </td>
+                <td data-slot="table-cell" class={td}>{u.balance}</td>
+                <td data-slot="table-cell" class={td} data-tour-target="kyc">
+                  {u.kyc ? <span data-slot="badge" class={kycVerified}>已认证</span> : <span data-slot="badge" class={kycNone}>未认证</span>}
+                </td>
+                <td data-slot="table-cell" class={td}>{u.at}</td>
+                <td data-slot="table-cell" class={td}>
+                  <div class="flex items-center gap-1">
+                    {u.role !== "admin" && u.status === 1 && <button type="button" class={rowAction}><Icon name="log-in" class="size-4" /></button>}
+                    <button type="button" class={rowAction}><Icon name="wallet" class="size-4" /></button>
+                    <button type="button" class={rowAction}><Icon name="arrow-up-down" class="size-4" /></button>
+                    <button type="button" class={rowAction}><Icon name="pencil" class="size-4" /></button>
+                    <button type="button" class={rowActionDanger}><Icon name="trash-2" class="size-4" /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Pagination total={2186} />
+    </div>
+  </div>
+
+  <Fragment slot="floats">
+    <!--
+      启用二次验证对话框（448×578，是展台里最大的浮层）：放在页面右侧，压在注册时间与操作列上方，左缘紧贴实名列，顶部让出工具栏按钮。
+      位于倾斜展台的近侧，浮起后透视已放大约 5%，因此不再额外放大：放大到 1 倍以上时，要么遮住实名列，要么在 1100～1240 宽的视口中被右侧裁切
+    -->
+    <TourFloat x={886} y={280} w={448} z={110} scale={0.95} origin="0 0" radius="0.875rem">
+      <div role="dialog" data-slot="dialog-content" data-tour-target="totp" class={dialogContent()}>
+        <div data-slot="dialog-header" class={dialogHeader()}>
+          <h2 data-slot="dialog-title" class={dialogTitle()}>启用二次验证</h2>
+        </div>
+        <div class="space-y-4 py-2">
+          <p class="text-sm text-muted-foreground">使用 Google Authenticator、Microsoft Authenticator 等验证器 App 扫描下方二维码</p>
+          <div class="flex justify-center py-2">
+            <div class="rounded-xl border bg-white p-3">
+              <svg height="180" width="180" viewBox={`0 0 ${QR_MODULES} ${QR_MODULES}`} role="img">
+                <path fill="#FFFFFF" d={`M0,0 h${QR_MODULES}v${QR_MODULES}H0z`} shape-rendering="crispEdges"></path>
+                <path fill="#000000" d={QR_PATH} shape-rendering="crispEdges"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label data-slot="label" class={label("text-xs text-muted-foreground")}>无法扫码？手动输入密钥</label>
+            <div class="rounded-lg border bg-muted/50 px-3 py-2">
+              <code class="font-mono text-xs break-all select-all">{QR_SECRET}</code>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label data-slot="label" class={label()}>输入验证码确认</label>
+            <div class="flex justify-center">
+              <div
+                data-input-otp-container="true"
+                class="cn-input-otp flex items-center has-disabled:opacity-50"
+                style="position:relative;cursor:text;user-select:none;pointer-events:none;--root-height:40px"
+              >
+                <div data-slot="input-otp-group" class="flex items-center rounded-lg has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40">
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <div data-slot="input-otp-slot" data-active={i === code.length ? "true" : "false"} class={otpSlot}>
+                      {i < code.length && <span class="otp-digit" style={`--d:${i}`}>{code[i]}</span>}
+                      {i === code.length && (
+                        <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <div class="animate-caret-blink h-4 w-px bg-foreground duration-1000"></div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div data-slot="dialog-footer" class={dialogFooter()}>
+          <button type="button" data-slot="button" class={button("outline")}>取消</button>
+          <button type="button" data-slot="button" class={button("default")} disabled>启用</button>
+        </div>
+        <DialogClose />
+      </div>
+    </TourFloat>
+  </Fragment>
+</TourStage>
+
+<style>
+  /* 验证码逐位输入：对话框浮起后，数字依次出现 */
+  @keyframes otp-digit-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.tour-stage[data-played]) .otp-digit {
+      display: inline-block;
+      animation: otp-digit-in 0.3s ease-out both;
+      animation-delay: calc(1.35s + var(--d) * 0.28s);
+    }
+  }
+</style>

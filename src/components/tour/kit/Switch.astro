@@ -1,0 +1,16 @@
+---
+import { switchRoot, switchThumb } from "../ui";
+
+interface Props {
+  checked?: boolean;
+  size?: "default" | "sm";
+  class?: string;
+}
+
+const { checked = false, size = "default", class: className } = Astro.props;
+const state = checked ? "checked" : "unchecked";
+---
+
+<button type="button" role="switch" aria-checked={checked ? "true" : "false"} data-state={state} data-slot="switch" data-size={size} class={switchRoot(className)}>
+  <span data-state={state} data-slot="switch-thumb" class={switchThumb}></span>
+</button>

@@ -1,0 +1,191 @@
+---
+// 商业运营：订单管理列表（ui/src/pages/admin/orders/index.tsx）+ 浮起的订单详情弹出框（components/order-popover.tsx）
+import TourStage from "../TourStage.astro";
+import TourFloat from "../TourFloat.astro";
+import Icon from "../../demo/Icon.astro";
+import PageHeader from "../kit/PageHeader.astro";
+import SelectTrigger from "../kit/SelectTrigger.astro";
+import SortHead from "../kit/SortHead.astro";
+import Checkbox from "../kit/Checkbox.astro";
+import { badge, type BadgeVariant, button, input, popoverContent, rowAction, rowActionDanger, table, tableBody, tableCell, tableHead, tableHeader, tableRow, tabs, tabsList, tabsTrigger } from "../ui";
+
+interface Props {
+  initial?: boolean;
+}
+
+const { initial } = Astro.props;
+
+const statusMap: Record<string, { label: string; variant: BadgeVariant }> = {
+  pending: { label: "待支付", variant: "outline" },
+  paid: { label: "已支付", variant: "default" },
+  cancelled: { label: "已取消", variant: "secondary" },
+  refunded: { label: "已退款", variant: "destructive" },
+};
+const refundMap: Record<string, { label: string; variant: BadgeVariant }> = {
+  approved: { label: "退款已通过", variant: "default" },
+  pending: { label: "退款审核中", variant: "outline" },
+};
+
+interface Order {
+  id: number;
+  no: string;
+  user: string;
+  /** 实例名；转售订单为服务编号 */
+  target: string | number | null;
+  type: string;
+  module?: boolean;
+  plan: string;
+  cycle: string;
+  amount: string;
+  status: keyof typeof statusMap;
+  refund?: keyof typeof refundMap;
+  at: string;
+}
+
+const orders: Order[] = [
+  { id: 1286, no: "202610201435089321647205", user: "zhangsan", target: 212, type: "新购", module: true, plan: "香港 CN2 2核4G", cycle: "年付", amount: "¥699.00", status: "paid", at: "2026/10/20 14:35" },
+  { id: 1285, no: "202610201402516630918824", user: "lisi", target: "hk-web-03", type: "续费", plan: "进阶型 2C4G", cycle: "季付", amount: "¥279.00", status: "paid", at: "2026/10/20 14:02" },
+  { id: 1284, no: "202610201348172205531976", user: "wangwu", target: null, type: "新购", plan: "标准型 2C2G", cycle: "月付", amount: "¥59.00", status: "pending", at: "2026/10/20 13:48" },
+  { id: 1283, no: "202610201311405587260133", user: "zhaoliu", target: "jp-game-01", type: "升级", plan: "高性能 4C8G", cycle: "月付", amount: "¥120.00", status: "paid", at: "2026/10/20 13:11" },
+  { id: 1282, no: "202610201226339014478652", user: "chenqi", target: 208, type: "续费", module: true, plan: "宿迁 BGP 2核2G", cycle: "月付", amount: "¥39.00", status: "paid", at: "2026/10/20 12:26" },
+  { id: 1281, no: "202610201153027746183590", user: "demo", target: "sg-node-02", type: "新购", plan: "弹性型 2C4G", cycle: "时付", amount: "¥10.00", status: "paid", at: "2026/10/20 11:53" },
+  { id: 1280, no: "202610201120468813025447", user: "zhangsan", target: "hk-web-01", type: "附加 IP", plan: "旗舰型 8C16G", cycle: "月付", amount: "¥15.00", status: "paid", at: "2026/10/20 11:20" },
+  { id: 1279, no: "202610201047195528706361", user: "lisi", target: null, type: "新购", plan: "入门型 1C512M", cycle: "月付", amount: "¥15.00", status: "cancelled", at: "2026/10/20 10:47" },
+  { id: 1278, no: "202610201009553361094218", user: "wangwu", target: "us-proxy-01", type: "新购", plan: "洛杉矶 1C1G", cycle: "年付", amount: "¥289.00", status: "refunded", refund: "approved", at: "2026/10/20 10:09" },
+  { id: 1277, no: "202610200932417702851936", user: "test01", target: 205, type: "新购", module: true, plan: "东京 软银 2核4G", cycle: "月付", amount: "¥59.00", status: "paid", at: "2026/10/20 09:32" },
+  { id: 1276, no: "202610200915083348120577", user: "demo", target: "hk-web-02", type: "续费", plan: "标准型 2C2G", cycle: "年付", amount: "¥590.00", status: "paid", at: "2026/10/20 09:15" },
+];
+
+// 浮起的订单详情展示第一行订单
+const featured = orders[0];
+const td = tableCell();
+const filters = ["类型", "业务", "周期", "状态", "退款状态"];
+---
+
+<TourStage id="billing" active="订单管理" breadcrumb={["订单管理"]} path="/admin/orders" initial={initial}>
+  <div class="space-y-6 px-6 pt-6">
+    <PageHeader title="订单管理" description="查看和管理所有订单与交易流水">
+      <div data-orientation="horizontal" data-slot="tabs" class={tabs()}>
+        <div role="tablist" data-slot="tabs-list" data-variant="default" data-orientation="horizontal" class={tabsList()}>
+          <button type="button" role="tab" data-state="active" data-slot="tabs-trigger" class={tabsTrigger()}>订单列表</button>
+          <button type="button" role="tab" data-state="inactive" data-slot="tabs-trigger" class={tabsTrigger()}>交易流水</button>
+        </div>
+      </div>
+    </PageHeader>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex shrink-0 flex-wrap items-center gap-3">
+        <input data-slot="input" class={input("h-8 w-[200px] min-w-0 flex-none")} placeholder="搜索订单号/用户名..." />
+        {filters.map((f) => <SelectTrigger placeholder={f} class="h-8 w-[150px] min-w-0" />)}
+        <div class="ml-auto">
+          <div class="flex gap-2">
+            <button type="button" data-slot="button" class={button("default")}><Icon name="plus" class="size-4" />新购下单</button>
+            <button type="button" data-slot="dropdown-menu-trigger" class={button("outline")}><Icon name="download" data-icon="inline-start" class="size-4" />导出</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-md transition-opacity duration-300">
+        <table class={table("min-w-[800px]")}>
+          <thead data-slot="table-header" class={tableHeader()}>
+            <tr data-slot="table-row" class={tableRow()}>
+              <th data-slot="table-head" class={tableHead()}><Checkbox /></th>
+              <SortHead sortable>ID</SortHead>
+              <SortHead sortable>订单号</SortHead>
+              <SortHead sortable>用户</SortHead>
+              <SortHead sortable>实例</SortHead>
+              <SortHead sortable>类型</SortHead>
+              <SortHead>业务</SortHead>
+              <SortHead sortable>套餐 / 商品</SortHead>
+              <SortHead data-tour-target="cycle">周期</SortHead>
+              <SortHead sortable>金额</SortHead>
+              <SortHead sortable>状态</SortHead>
+              <SortHead sortable>退款</SortHead>
+              <SortHead sortable>创建时间</SortHead>
+              <SortHead>操作</SortHead>
+            </tr>
+          </thead>
+          <tbody data-slot="table-body" class={tableBody()}>
+            {orders.map((o, i) => (
+              <tr data-slot="table-row" class={tableRow("tour-a-rise")} style={`--i:${i}`}>
+                <td data-slot="table-cell" class={td}><Checkbox /></td>
+                <td data-slot="table-cell" class={td}>{o.id}</td>
+                <td data-slot="table-cell" class={td}>
+                  <button type="button" class="font-mono text-xs text-primary hover:underline">{o.no}</button>
+                </td>
+                <td data-slot="table-cell" class={td}>
+                  <button type="button" class="cursor-pointer text-primary hover:underline">{o.user}</button>
+                </td>
+                <td data-slot="table-cell" class={td}>
+                  {o.target === null ? (
+                    <span class="text-muted-foreground">-</span>
+                  ) : o.module ? (
+                    <a class="text-primary hover:underline">服务 #{o.target}</a>
+                  ) : (
+                    <button type="button" class="cursor-pointer text-primary hover:underline">{o.target}</button>
+                  )}
+                </td>
+                <td data-slot="table-cell" class={td}>{o.type}</td>
+                <td data-slot="table-cell" class={td}>
+                  {o.module ? <span data-slot="badge" class={badge("outline")}>转售</span> : <span class="text-xs text-muted-foreground">自营</span>}
+                </td>
+                <td data-slot="table-cell" class={td}>{o.plan}</td>
+                <td data-slot="table-cell" class={td} data-tour-target="cycle">{o.cycle}</td>
+                <td data-slot="table-cell" class={td}><span class="font-medium">{o.amount}</span></td>
+                <td data-slot="table-cell" class={td}>
+                  <span data-slot="badge" class={badge(statusMap[o.status].variant)}>{statusMap[o.status].label}</span>
+                </td>
+                <td data-slot="table-cell" class={td}>
+                  {o.refund ? <span data-slot="badge" class={badge(refundMap[o.refund].variant)}>{refundMap[o.refund].label}</span> : <span class="text-muted-foreground">-</span>}
+                </td>
+                <td data-slot="table-cell" class={td}>{o.at}</td>
+                <td data-slot="table-cell" class={td}>
+                  <div class="flex h-8 items-center gap-1">
+                    {o.status === "pending" && (
+                      <>
+                        <button type="button" class={rowAction}><Icon name="credit-card" class="size-4" /></button>
+                        <button type="button" class={rowActionDanger}><Icon name="circle-x" class="size-4" /></button>
+                      </>
+                    )}
+                    {o.status === "paid" && <button type="button" class={rowActionDanger}><Icon name="undo-2" class="size-4" /></button>}
+                    {(o.status === "pending" || o.status === "cancelled") && <button type="button" class={rowActionDanger}><Icon name="trash-2" class="size-4" /></button>}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <Fragment slot="floats">
+    <!-- 订单详情弹出框：锚定在第一行的订单号下方 -->
+    <TourFloat x={160} y={392} w={288} z={90} scale={1.3} origin="0 0" radius="0.625rem">
+      <div data-slot="popover-content" data-tour-target="order" class={popoverContent("w-72 p-0")}>
+        <div class="space-y-2 p-4 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs text-muted-foreground">{featured.no}</span>
+            <span data-slot="badge" class={badge(statusMap[featured.status].variant)}>{statusMap[featured.status].label}</span>
+          </div>
+          <div class="grid grid-cols-[5rem_1fr] gap-y-1.5 text-muted-foreground">
+            <span>用户</span>
+            <span class="text-foreground">{featured.user}</span>
+            <span>类型</span>
+            <span class="text-foreground">{featured.type}</span>
+            <span>套餐</span>
+            <span class="truncate text-foreground">{featured.plan}</span>
+            <span>周期</span>
+            <span class="text-foreground">{featured.cycle}</span>
+            <span>金额</span>
+            <span class="font-medium text-foreground" data-tour-count>{featured.amount}</span>
+            <span>创建时间</span>
+            <span class="text-foreground">{featured.at}</span>
+            <span>支付时间</span>
+            <span class="text-foreground">{featured.at}</span>
+          </div>
+        </div>
+      </div>
+    </TourFloat>
+  </Fragment>
+</TourStage>

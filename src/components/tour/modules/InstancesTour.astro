@@ -1,0 +1,328 @@
+---
+// 实例管理：实例详情「概览」标签（ui/src/pages/admin/instances/detail.tsx + sections/overview.tsx）
+// + 浮起的顶栏任务列表弹出框（components/task-panel.tsx）
+import TourStage from "../TourStage.astro";
+import TourFloat from "../TourFloat.astro";
+import Icon from "../../demo/Icon.astro";
+import { badge, button, popoverContent, separator, tabs, tabsList, tabsTrigger, type BadgeVariant } from "../ui";
+import Spinner from "../kit/Spinner.astro";
+
+interface Props {
+  initial?: boolean;
+}
+
+const { initial } = Astro.props;
+
+const instance = {
+  name: "vm-bj-demo-01",
+  ip: "103.100.10.2",
+  node: "CN-BJ-01",
+  arch: "amd64",
+  hostname: "web-prod",
+  os: "Ubuntu 24.04",
+  image: "ubuntu/24.04/cloud",
+  pool: "北京 IPv4",
+  createdAt: "2026/09/08 10:24",
+  expireAt: "2026/11/08 10:24",
+};
+
+// 右上角操作按钮（运行中的虚拟机）：重启/停止/冻结/强制停止/救援模式/删除
+const actions: { icon: string; label: string; danger?: boolean }[] = [
+  { icon: "rotate-cw", label: "重启" },
+  { icon: "square", label: "停止" },
+  { icon: "pause", label: "冻结" },
+  { icon: "zap", label: "强制停止", danger: true },
+  { icon: "life-buoy", label: "救援模式" },
+  { icon: "trash-2", label: "删除", danger: true },
+];
+
+const tabItems = [
+  { icon: "activity", label: "概览", active: true },
+  { icon: "settings-2", label: "配置" },
+  { icon: "shield", label: "防火墙" },
+  { icon: "arrow-up-down", label: "端口转发" },
+  { icon: "camera", label: "快照" },
+  { icon: "terminal", label: "终端" },
+];
+
+// 运行状态（MetricBar）。CPU 在后台固定显示 0% 进度，数值为累计 CPU 时间
+const metrics = [
+  { label: "CPU", value: "8642.17s", percent: 0, sub: "2 核心" },
+  { label: "内存", value: "1.2 GB / 2 GB", percent: 59.6, sub: "60% 使用率" },
+  { label: "系统盘", value: "12.6 GB / 40 GB", percent: 31.5, sub: "32% 使用率" },
+];
+
+const netStats = [
+  { label: "网络接收", value: "41.8 GB", mono: true },
+  { label: "网络发送", value: "126.5 GB", mono: true },
+  { label: "进程数", value: "142" },
+  { label: "PID", value: "18432" },
+];
+
+const quotas = [
+  { label: "CPU", value: "2", sub: "核心" },
+  { label: "内存", value: "2 GB" },
+  { label: "磁盘", value: "40 GB" },
+  { label: "带宽", value: "20 Mbps" },
+];
+
+// 任务列表：一条进行中、两条已完成（标题为任务类型 + 任务编号，与后台一致）
+const taskStatus: Record<string, { label: string; variant: BadgeVariant }> = {
+  running: { label: "运行中", variant: "default" },
+  completed: { label: "已完成", variant: "secondary" },
+};
+const tasks = [
+  { id: 3842, label: "创建快照", status: "running" },
+  { id: 3841, label: "重启实例", status: "completed" },
+  { id: 3839, label: "重装实例", status: "completed" },
+];
+
+const outline = button("outline");
+const outlineDanger = button("outline", "default", "text-destructive hover:text-destructive");
+const sep = separator("my-8");
+const sectionDesc = "text-sm text-muted-foreground mt-1";
+// React 渲染的相邻文本会成为独立的文本节点，静态 HTML 中用空注释隔开以得到相同的文本节点结构
+const TEXT_BREAK = "<!---->";
+---
+
+<TourStage id="instances" active="实例管理" breadcrumb={["实例管理", instance.name]} path="/admin/instances/1" initial={initial} taskCount={1}>
+  <div class="space-y-6 px-6 pt-6">
+    <div class="flex shrink-0 flex-row items-center justify-between gap-4">
+      <div class="min-w-0">
+        <div class="flex min-w-0 items-center gap-2">
+          <h1 class="truncate text-xl font-semibold tracking-tight" title={instance.name}>{instance.name}</h1>
+          <span data-slot="badge" data-variant="default" class={badge("default", "shrink-0")}>运行中</span>
+        </div>
+        <!-- 后台由 React 拼接为多个文本节点（字形排版按节点分段），用注释分隔以保持一致 -->
+        <p class="mt-0.5 text-sm text-muted-foreground">{instance.ip}<Fragment set:html={TEXT_BREAK} /> · <Fragment set:html={TEXT_BREAK} />{instance.node}<Fragment set:html={TEXT_BREAK} />{` · ${instance.arch}`}</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2" data-tour-target="actions">
+        {actions.map((a) => (
+          <button type="button" data-slot="button" data-variant="outline" data-size="default" class={a.danger ? outlineDanger : outline}>
+            <Icon name={a.icon} class="size-4" />
+            <span class="inline">{a.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div dir="ltr" data-orientation="horizontal" data-slot="tabs" class={tabs("shrink-0 overflow-hidden")}>
+      <div class="no-scrollbar overflow-x-auto">
+        <div role="tablist" aria-orientation="horizontal" data-slot="tabs-list" data-variant="line" data-orientation="horizontal" class={tabsList("line")} data-tour-target="tabs">
+          {tabItems.map((t) => (
+            <button type="button" role="tab" data-state={t.active ? "active" : "inactive"} data-slot="tabs-trigger" data-orientation="horizontal" class={tabsTrigger()}>
+              <Icon name={t.icon} class="size-4" />{t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div>
+        <div class="space-y-0">
+          <section class="space-y-5">
+            <div>
+              <h3 class="text-lg font-semibold">运行状态</h3>
+              <p class={sectionDesc}>实时资源使用情况<span> · 已运行 3天14小时</span></p>
+            </div>
+            <div class="grid max-w-3xl grid-cols-3 gap-x-8 gap-y-5">
+              {metrics.map((m, i) => (
+                <div class="space-y-2">
+                  <div class="flex items-baseline justify-between">
+                    <span class="text-sm text-muted-foreground">{m.label}</span>
+                    <span class="text-sm font-medium tabular-nums" data-tour-count>{m.value}</span>
+                  </div>
+                  <div class="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div class="tour-a-grow h-full rounded-full bg-primary transition-all duration-500" style={`width: ${m.percent}%;--i:${i}`}></div>
+                  </div>
+                  <div class="text-xs text-muted-foreground">{m.sub}</div>
+                </div>
+              ))}
+            </div>
+            <div class="grid max-w-3xl grid-cols-4 gap-x-8 gap-y-4 text-sm">
+              {netStats.map((s) => (
+                <div>
+                  <div class="text-muted-foreground">{s.label}</div>
+                  <div class={s.mono ? "mt-0.5 font-mono font-medium" : "mt-0.5 font-medium tabular-nums"}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+          <div data-orientation="horizontal" role="none" data-slot="separator" class={sep}></div>
+
+          <section class="space-y-5">
+            <div>
+              <h3 class="text-lg font-semibold">资源配额</h3>
+              <p class={sectionDesc}>实例的资源分配情况</p>
+            </div>
+            <div class="grid max-w-3xl grid-cols-4 gap-x-8 gap-y-5">
+              {quotas.map((q) => (
+                <div class="space-y-1">
+                  <div class="text-sm text-muted-foreground">{q.label}</div>
+                  <div class="text-2xl font-bold tabular-nums">{q.value}</div>
+                  {q.sub && <div class="text-xs text-muted-foreground">{q.sub}</div>}
+                </div>
+              ))}
+            </div>
+            <div class="max-w-md space-y-2">
+              <div class="flex items-baseline justify-between">
+                <span class="text-sm text-muted-foreground">流量使用</span>
+                <span class="text-sm font-medium tabular-nums" data-tour-count>386.5 GB / 1000.0 GB</span>
+              </div>
+              <div class="h-1.5 overflow-hidden rounded-full bg-muted">
+                <div class="tour-a-grow h-full rounded-full bg-primary transition-all duration-500" style="width: 38.65%;--i:3"></div>
+              </div>
+            </div>
+          </section>
+          <div data-orientation="horizontal" role="none" data-slot="separator" class={sep}></div>
+
+          <section class="space-y-5">
+            <div>
+              <h3 class="text-lg font-semibold">基本信息</h3>
+              <p class={sectionDesc}>实例的详细属性</p>
+            </div>
+            <div class="grid max-w-4xl grid-cols-3 gap-x-8 gap-y-4 text-sm">
+              <div class="min-w-0">
+                <div class="text-muted-foreground">实例名称</div>
+                <div class="mt-0.5 truncate font-medium" title={instance.name}>{instance.name}</div>
+              </div>
+              <div class="min-w-0">
+                <div class="text-muted-foreground">主机名</div>
+                <div class="mt-0.5 truncate font-medium" title={instance.hostname}>{instance.hostname}</div>
+              </div>
+              <div class="min-w-0">
+                <div class="text-muted-foreground">备注</div>
+                <div class="group mt-0.5 flex items-center gap-1">
+                  <span class="truncate font-medium">-</span>
+                  <button type="button" data-slot="button" data-variant="ghost" data-size="icon" class={button("ghost", "icon", "size-6 shrink-0 opacity-0 transition-opacity group-hover:opacity-100")}>
+                    <Icon name="pencil" class="size-3" />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div class="text-muted-foreground">类型</div>
+                <div class="mt-0.5 font-medium">虚拟机</div>
+              </div>
+              <div>
+                <div class="text-muted-foreground">架构</div>
+                <div class="mt-0.5 font-medium">{instance.arch}</div>
+              </div>
+              <div>
+                <div class="text-muted-foreground">状态</div>
+                <div class="mt-1">
+                  <span data-slot="badge" data-variant="default" class={badge("default")}>运行中</span>
+                </div>
+              </div>
+              <div>
+                <div class="text-muted-foreground">操作系统</div>
+                <div class="mt-0.5 font-medium">{instance.os}</div>
+              </div>
+            </div>
+          </section>
+          <div data-orientation="horizontal" role="none" data-slot="separator" class={sep}></div>
+
+          <section class="space-y-5">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold">网络信息</h3>
+                <p class={sectionDesc}>IP 地址和网络配置</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" data-slot="button" data-variant="outline" data-size="default" class={outline}><Icon name="plus" class="size-4" />添加 IP</button>
+                <span data-state="closed" data-slot="tooltip-trigger">
+                  <button type="button" data-slot="button" data-variant="outline" data-size="default" class={outline} disabled><Icon name="arrow-right-left" class="size-4" />更换主 IP</button>
+                </span>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between rounded-md border px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <Icon name="globe" class="size-4 text-muted-foreground" />
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-mono text-sm font-medium">{instance.ip}</span>
+                      <span data-slot="badge" data-variant="secondary" class={badge("secondary", "text-2xs")}>主 IP</span>
+                    </div>
+                    <div class="mt-0.5 text-xs text-muted-foreground">{instance.pool}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          <div data-orientation="horizontal" role="none" data-slot="separator" class={sep}></div>
+
+          <section class="space-y-5">
+            <div>
+              <h3 class="text-lg font-semibold">关联信息</h3>
+              <p class={sectionDesc}>所属节点和镜像来源</p>
+            </div>
+            <div class="grid max-w-4xl grid-cols-3 gap-x-8 gap-y-4 text-sm">
+              <div>
+                <div class="text-muted-foreground">所属节点</div>
+                <div class="mt-0.5 font-medium">{instance.node}</div>
+              </div>
+              <div>
+                <div class="text-muted-foreground">镜像</div>
+                <div class="mt-0.5 font-medium">{instance.image}</div>
+              </div>
+              <div>
+                <div class="text-muted-foreground">描述</div>
+                <div class="mt-0.5 font-medium">-</div>
+              </div>
+              <div>
+                <div class="text-muted-foreground">创建时间</div>
+                <div class="mt-0.5 font-medium">{instance.createdAt}</div>
+              </div>
+              <div>
+                <div class="text-muted-foreground">到期时间</div>
+                <div class="mt-0.5 flex items-center gap-1">
+                  <span class="font-medium">{instance.expireAt}</span>
+                  <button type="button" data-slot="tooltip-trigger" data-variant="ghost" data-size="icon" class={button("ghost", "icon", "size-5")}>
+                    <Icon name="pencil" class="size-3" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <Fragment slot="floats">
+    <!-- 任务列表弹出框：位于顶栏任务按钮下方，避开操作按钮行，右缘略超出窗口 -->
+    <TourFloat x={1012} y={218} w={288} z={100} scale={1.2} origin="100% 0" radius="0.625rem">
+      <div data-slot="popover-content" data-side="bottom" data-align="end" data-state="open" role="dialog" data-tour-target="tasks" class={popoverContent("flex w-72 flex-col overflow-hidden p-0")}>
+        <div class="flex min-h-0 flex-1">
+          <div class="flex w-72 min-w-0 min-h-0 flex-1 flex-col">
+            <div class="flex min-h-0 flex-1 flex-col">
+              <div class="flex h-9 shrink-0 items-center justify-between border-b px-3">
+                <span class="text-xs font-medium">任务</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-2xs text-muted-foreground">1 个进行中</span>
+                  <button type="button" class="cursor-pointer text-2xs text-muted-foreground transition-colors hover:text-foreground">清空</button>
+                </div>
+              </div>
+              <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                {tasks.map((t, i) => (
+                  <button type="button" class="tour-a-rise flex w-full cursor-pointer items-center gap-2 border-b px-3 py-1.5 text-left transition-colors last:border-b-0 hover:bg-muted/50" style={`--i:${i + 14}`}>
+                    {t.status === "running" ? (
+                      <Spinner class="text-blue-500" />
+                    ) : (
+                      <Icon name="circle-check" class="size-3.5 text-green-500" />
+                    )}
+                    <span class="min-w-0 flex-1 truncate text-xs">
+                      {t.label}<span class="ml-1 text-muted-foreground">#{t.id}</span>
+                    </span>
+                    <span data-slot="badge" data-variant={taskStatus[t.status].variant} class={badge(taskStatus[t.status].variant, "shrink-0 text-2xs")}>{taskStatus[t.status].label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </TourFloat>
+  </Fragment>
+</TourStage>

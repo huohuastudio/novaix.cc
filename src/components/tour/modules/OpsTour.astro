@@ -1,0 +1,116 @@
+---
+// 运维监控：节点详情「统计」标签（ui/src/pages/admin/nodes/detail.tsx + components/node-stats.tsx）
+// 浮层为页面下方视口外的「网络流量」趋势图卡片
+import TourStage from "../TourStage.astro";
+import TourFloat from "../TourFloat.astro";
+import Icon from "../../demo/Icon.astro";
+import GaugeChart from "./ops/GaugeChart.astro";
+import TrendCard from "./ops/TrendCard.astro";
+import { cpuChart, gauges, memChart, netChart } from "./ops/metrics";
+import { badge, button, separator, tabs, tabsList, tabsTrigger } from "../ui";
+
+interface Props {
+  initial?: boolean;
+}
+
+const { initial } = Astro.props;
+
+const tabItems = [
+  { label: "概览", icon: "activity" },
+  { label: "统计", icon: "chart-line", active: true },
+  { label: "实例", icon: "monitor-cog" },
+  { label: "配置文件", icon: "file-sliders" },
+  { label: "存储", icon: "database" },
+  { label: "网络", icon: "globe" },
+  { label: "镜像", icon: "disc3" },
+  { label: "任务日志", icon: "scroll-text" },
+  { label: "终端", icon: "terminal" },
+  { label: "设置", icon: "settings2" },
+];
+const ranges = ["1 小时", "6 小时", "24 小时", "7 天", "30 天"];
+---
+
+<TourStage id="ops" active="节点管理" breadcrumb={["节点管理", "HK-01", "统计"]} path="/admin/nodes/5/stats" initial={initial}>
+  <div class="px-6 pt-6 space-y-6">
+    <div class="flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-semibold tracking-tight">HK-01</h1>
+            <span data-slot="badge" data-variant="default" class={badge("default")}>在线</span>
+          </div>
+          <p class="text-sm text-muted-foreground mt-0.5">203.0.113.10 · 香港 CN2 · amd64</p>
+        </div>
+      </div>
+      <button type="button" data-slot="button" data-variant="outline" data-size="default" class={button("outline")}>
+        <Icon name="refresh-cw" class="size-4" />同步资源
+      </button>
+    </div>
+
+    <div dir="ltr" data-orientation="horizontal" data-slot="tabs" class={tabs("overflow-hidden shrink-0")}>
+      <div class="overflow-x-auto no-scrollbar">
+        <div role="tablist" aria-orientation="horizontal" data-slot="tabs-list" data-variant="line" data-orientation="horizontal" class={tabsList("line")}>
+          {
+            tabItems.map((t) => (
+              <button type="button" role="tab" data-state={t.active ? "active" : "inactive"} data-slot="tabs-trigger" data-orientation="horizontal" class={tabsTrigger()}>
+                <Icon name={t.icon} class="size-4" />
+                {t.label}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5 rounded-lg bg-muted p-1">
+            {
+              ranges.map((r, i) => (
+                <button
+                  type="button"
+                  class={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${i === 0 ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {r}
+                </button>
+              ))
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" data-slot="button" data-variant="outline" data-size="default" class={button("outline")}>
+              <Icon name="power" class="size-3.5" />关闭监控
+            </button>
+          </div>
+        </div>
+
+        <div class="grid gap-6 grid-cols-3">
+          {gauges.map((g, i) => <GaugeChart gauge={g} order={i} />)}
+        </div>
+
+        <div data-orientation="horizontal" role="none" data-slot="separator" class={separator("my-6")}></div>
+
+        <div class="grid gap-4 grid-cols-2">
+          <TrendCard title="CPU 趋势" icon="cpu" chart={cpuChart} order={0} data-tour-target="charts" />
+          <TrendCard title="内存趋势" icon="memory-stick" chart={memChart} order={1} data-tour-target="charts" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <Fragment slot="floats">
+    <!-- 网络流量卡片：页面中位于第二行（视口外），浮起到右下角 -->
+    <TourFloat x={746} y={598} w={572} z={90} scale={1.15} origin="100% 100%" radius="0.875rem">
+      <TrendCard
+        title="网络流量"
+        icon="network"
+        chart={netChart}
+        order={3}
+        legend={[
+          { color: "var(--color-chart-4)", label: "接收" },
+          { color: "var(--color-chart-5)", label: "发送" },
+        ]}
+      />
+    </TourFloat>
+  </Fragment>
+</TourStage>

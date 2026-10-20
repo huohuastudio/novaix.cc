@@ -1,0 +1,321 @@
+/* ═══ 产品能力展台 ═══ */
+
+/* 倾斜角度注册为不继承的属性：鼠标跟随时每帧只重算 .tour-rig 自身，而不是整个展台 */
+@property --rx {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 7deg;
+}
+
+@property --ry {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: -13deg;
+}
+
+/* 各模块叠放在同一格，高度由后台外框的宽高比撑开；未显示的模块带 hidden，不参与样式与布局 */
+.tour-stack {
+  display: grid;
+}
+
+.tour-stage {
+  grid-area: 1 / 1;
+  position: relative;
+  perspective: 2200px;
+  perspective-origin: 50% 35%;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.tour-stage[data-active] {
+  opacity: 1;
+  transition: opacity 0.55s ease 0.08s;
+}
+
+.tour-rig,
+.tour-lift {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/* 切换时新模块从后方浮上来 */
+.tour-lift {
+  transform: translateZ(-90px);
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tour-stage[data-active] .tour-lift {
+  transform: none;
+}
+
+.tour-window {
+  box-shadow: 0 50px 100px -40px rgba(15, 23, 42, 0.45);
+}
+
+.dark .tour-window {
+  box-shadow: 0 0 90px -24px rgba(47, 107, 255, 0.55);
+}
+
+/* 浮层坐标系：与后台界面同尺寸，整体缩放到展台宽度（脚本按实际宽度覆盖 transform） */
+.tour-floats {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  transform: scale(0.55);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.tour-float {
+  position: absolute;
+  transform: translateZ(var(--z)) scale(var(--fs));
+  transform-origin: var(--fo);
+  transition:
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.4s ease;
+}
+
+/* 后台不少部件本身透明、靠页面底色衬托，浮起后统一补上页面底色 */
+.tour-float-body {
+  border-radius: var(--fr);
+  background-color: var(--background);
+  filter: drop-shadow(0 28px 40px rgba(15, 23, 42, 0.28));
+  outline: 2px solid transparent;
+  outline-offset: 5px;
+  transition: outline-color 0.3s ease;
+}
+
+.dark .tour-float-body {
+  filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.6));
+}
+
+/* 功能点高亮：其余部件后退变淡，目标浮层再抬高一些 */
+.tour-stage[data-spot] .tour-float {
+  opacity: 0;
+  transform: translateZ(calc(var(--z) * 0.4)) scale(var(--fs));
+}
+
+.tour-stage[data-spot] .tour-float[data-spot-on] {
+  opacity: 1;
+  transform: translateZ(calc(var(--z) + 60px)) scale(var(--fs));
+}
+
+.tour-float[data-spot-on] .tour-float-body {
+  outline-color: var(--color-brand);
+}
+
+.tour-spot {
+  position: absolute;
+  z-index: 40;
+  pointer-events: none;
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 2px var(--color-brand),
+    0 0 0 9999px rgba(9, 11, 17, 0.4);
+  opacity: 0;
+  transition:
+    left 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    top 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.tour-spot[data-show] {
+  opacity: 1;
+}
+
+.tour-spot[data-full] {
+  box-shadow: 0 0 0 9999px rgba(9, 11, 17, 0.4);
+}
+
+.dark .tour-spot {
+  box-shadow:
+    0 0 0 2px var(--color-glow),
+    0 0 0 9999px rgba(0, 0, 0, 0.55);
+}
+
+.dark .tour-spot[data-full] {
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+}
+
+/* 宽屏且允许动效时才倾斜 */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .tour-rig {
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+  }
+}
+
+@media (max-width: 1023px), (prefers-reduced-motion: reduce) {
+  .tour-stage {
+    perspective: none;
+  }
+
+  .tour-float,
+  .tour-stage[data-spot] .tour-float,
+  .tour-stage[data-spot] .tour-float[data-spot-on] {
+    transform: scale(var(--fs));
+  }
+}
+
+/* ═══ 进场动画：模块首次出现时播放一次 ═══ */
+/* 未执行脚本时 data-played 不会出现，界面直接显示最终状态 */
+
+.tour-stage[data-played] .tour-float-body {
+  animation: tour-pop 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(0.55s + var(--i, 0) * 0.18s);
+}
+
+/* 依次上浮：列表行、卡片等，用 --i 控制顺序 */
+.tour-stage[data-played] .tour-a-rise {
+  animation: tour-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(0.2s + var(--i, 0) * 0.05s);
+}
+
+/* 从左向右展开：进度条 */
+.tour-stage[data-played] .tour-a-grow {
+  transform-origin: left center;
+  animation: tour-grow 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(0.3s + var(--i, 0) * 0.08s);
+}
+
+/* 曲线绘制：path 需设置 pathLength="1" */
+.tour-stage[data-played] .tour-a-draw {
+  stroke-dasharray: 1;
+  animation: tour-draw 1.6s cubic-bezier(0.45, 0, 0.2, 1) both;
+  animation-delay: calc(0.3s + var(--i, 0) * 0.12s);
+}
+
+.tour-stage[data-played] .tour-a-fade {
+  animation: tour-fade 0.8s ease both;
+  animation-delay: calc(0.3s + var(--i, 0) * 0.08s);
+}
+
+/* 开关从关拨到开：开关自身显示「开」，动画从「关」的底色与滑块位置开始 */
+.tour-a-switch {
+  --tour-switch-off: color-mix(in oklab, #000 15%, transparent);
+}
+
+.dark .tour-a-switch {
+  --tour-switch-off: color-mix(in oklab, #fff 20%, transparent);
+}
+
+.tour-stage[data-played] .tour-a-switch {
+  animation: tour-switch-track 0.2s ease 1.5s both;
+}
+
+.tour-stage[data-played] .tour-a-switch > [data-slot="switch-thumb"] {
+  animation: tour-switch-thumb 0.2s ease 1.5s both;
+}
+
+@keyframes tour-switch-track {
+  from {
+    background-color: var(--tour-switch-off);
+  }
+}
+
+@keyframes tour-switch-thumb {
+  from {
+    translate: 0 0;
+  }
+}
+
+@keyframes tour-pop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+}
+
+@keyframes tour-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes tour-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes tour-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes tour-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-stage,
+  .tour-stage * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ═══ 左侧功能列表 ═══ */
+
+.tour-detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-tour-item][data-active] .tour-detail {
+  grid-template-rows: 1fr;
+}
+
+.tour-detail > div {
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-tour-item][data-active] .tour-detail > div {
+  opacity: 1;
+  transition: opacity 0.4s ease 0.12s;
+}
+
+/* 当前项左侧的进度条：自动轮播时逐渐填满，停止后常亮 */
+.tour-progress {
+  transform-origin: top;
+  transform: scaleY(0);
+}
+
+[data-tour-item][data-active] .tour-progress {
+  animation: tour-progress 6s linear forwards;
+  animation-play-state: paused;
+}
+
+[data-tour][data-running] [data-tour-item][data-active] .tour-progress {
+  animation-play-state: running;
+}
+
+[data-tour][data-stopped] [data-tour-item][data-active] .tour-progress {
+  animation: none;
+  transform: none;
+}
+
+@keyframes tour-progress {
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-detail,
+  .tour-detail > div {
+    transition: none;
+  }
+}

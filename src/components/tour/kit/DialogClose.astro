@@ -1,0 +1,10 @@
+---
+// 对话框右上角的关闭按钮
+import Icon from "../../demo/Icon.astro";
+import { dialogClose } from "../ui";
+---
+
+<button type="button" data-slot="dialog-close" class={dialogClose}>
+  <Icon name="x" />
+  <span class="sr-only">Close</span>
+</button>

@@ -17,14 +17,43 @@ const ARROW_INSET = 2 - 5;
  */
 export function frameScale(el: Element) {
   const app = el.closest<HTMLElement>(".nx-app");
-  return app ? app.getBoundingClientRect().width / APP_WIDTH : 1;
+  return app ? app.getBoundingClientRect().width / app.offsetWidth : 1;
+}
+
+export interface Box {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+/** 在后台坐标系中显示提示框：side 为 right 时显示在目标右侧，否则显示在下方 */
+export function placeTip(app: HTMLElement, box: Box, text: string, side: "right" | "bottom") {
+  const tip = app.querySelector<HTMLElement>("[data-nx-tooltip]")!;
+  const tipArrow = tip.querySelector<HTMLElement>("[data-nx-tooltip-arrow]")!;
+  tip.querySelector<HTMLElement>("[data-nx-tooltip-text]")!.textContent = text;
+  tip.hidden = false;
+  const w = tip.offsetWidth;
+  const h = tip.offsetHeight;
+  if (side === "right") {
+    tip.style.left = `${box.left + box.width + TOOLTIP_GAP}px`;
+    tip.style.top = `${box.top + box.height / 2 - h / 2}px`;
+    tipArrow.style.cssText = `left:${ARROW_INSET}px;top:50%;transform:translateY(-50%) rotate(45deg)`;
+  } else {
+    // 贴近右边缘时向左收，与 Radix 的碰撞处理一致
+    const left = Math.min(box.left + box.width / 2 - w / 2, app.offsetWidth - w);
+    tip.style.left = `${left}px`;
+    tip.style.top = `${box.top + box.height + TOOLTIP_GAP}px`;
+    const arrowX = box.left + box.width / 2 - left;
+    tipArrow.style.cssText = `top:${ARROW_INSET}px;left:${arrowX}px;transform:translateX(-50%) rotate(45deg)`;
+  }
 }
 
 export function initAdminFrame(frame: HTMLElement) {
   const app = frame.querySelector<HTMLElement>(".nx-app")!;
 
-  // 缩放：按外框宽度等比缩放 1440 宽的后台界面
-  const resize = () => frame.style.setProperty("--nx-s", String(frame.clientWidth / APP_WIDTH));
+  // 缩放：按外框宽度等比缩放后台界面（app 的布局宽度即后台视口宽度）
+  const resize = () => frame.style.setProperty("--nx-s", String(frame.clientWidth / app.offsetWidth));
   new ResizeObserver(resize).observe(frame);
   resize();
 
@@ -60,8 +89,6 @@ export function initAdminFrame(frame: HTMLElement) {
 
   // 提示框
   const tip = app.querySelector<HTMLElement>("[data-nx-tooltip]")!;
-  const tipText = tip.querySelector<HTMLElement>("[data-nx-tooltip-text]")!;
-  const tipArrow = tip.querySelector<HTMLElement>("[data-nx-tooltip-arrow]")!;
 
   function hideTip() {
     tip.hidden = true;
@@ -78,24 +105,10 @@ export function initAdminFrame(frame: HTMLElement) {
       width: r.width / s,
       height: r.height / s,
     };
-    tipText.textContent = target.hasAttribute("data-nx-tip-theme")
+    const text = target.hasAttribute("data-nx-tip-theme")
       ? THEME_LABELS[document.documentElement.dataset.theme ?? "auto"] ?? "跟随系统"
       : target.dataset.nxTip ?? "";
-    tip.hidden = false;
-    const w = tip.offsetWidth;
-    const h = tip.offsetHeight;
-    if (target.dataset.nxTipSide === "right") {
-      tip.style.left = `${box.left + box.width + TOOLTIP_GAP}px`;
-      tip.style.top = `${box.top + box.height / 2 - h / 2}px`;
-      tipArrow.style.cssText = `left:${ARROW_INSET}px;top:50%;transform:translateY(-50%) rotate(45deg)`;
-    } else {
-      // 贴近右边缘时向左收，与 Radix 的碰撞处理一致
-      const left = Math.min(box.left + box.width / 2 - w / 2, APP_WIDTH - w);
-      tip.style.left = `${left}px`;
-      tip.style.top = `${box.top + box.height + TOOLTIP_GAP}px`;
-      const arrowX = box.left + box.width / 2 - left;
-      tipArrow.style.cssText = `top:${ARROW_INSET}px;left:${arrowX}px;transform:translateX(-50%) rotate(45deg)`;
-    }
+    placeTip(app, box, text, target.dataset.nxTipSide === "right" ? "right" : "bottom");
   }
 
   app.querySelectorAll<HTMLElement>("[data-nx-tip]").forEach((el) => {

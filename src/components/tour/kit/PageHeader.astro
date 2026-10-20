@@ -1,0 +1,22 @@
+---
+// 列表页标题区：标题 + 帮助图标 + 描述，右侧插槽放操作按钮
+import HelpButton from "./HelpButton.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<div class="flex shrink-0 flex-row items-start justify-between gap-4">
+  <div>
+    <div class="flex items-center gap-2">
+      <h1 class="text-2xl font-bold tracking-tight">{title}</h1>
+      <HelpButton />
+    </div>
+    {description && <p class="mt-1 text-sm text-muted-foreground">{description}</p>}
+  </div>
+  <slot />
+</div>

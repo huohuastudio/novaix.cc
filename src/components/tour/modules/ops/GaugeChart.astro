@@ -1,0 +1,61 @@
+---
+// 资源使用率环形图：后台 components/node-stats.tsx 中的 GaugeChart（recharts PieChart 160×160）
+import Icon from "../../../demo/Icon.astro";
+import { formatPercent } from "../../../demo/format";
+import { GAUGE_BAND, GAUGE_MID, GAUGE_SIZE, gaugeSectors, type Gauge } from "./metrics";
+
+interface Props {
+  gauge: Gauge;
+  /** 进场动画顺序 */
+  order?: number;
+}
+
+const { gauge, order = 0 } = Astro.props;
+const sectors = gaugeSectors(gauge.percent);
+const maskId = `ops-gauge-${gauge.key}`;
+const c = GAUGE_SIZE / 2;
+---
+
+<div class="space-y-3">
+  <div class="flex items-center gap-2">
+    <Icon name={gauge.icon} class="size-4 text-muted-foreground" />
+    <h4 class="text-sm font-medium">{gauge.title}</h4>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="relative shrink-0 size-40">
+      <div class="recharts-wrapper" style={`position: relative; cursor: default; width: ${GAUGE_SIZE}px; height: ${GAUGE_SIZE}px;`}>
+        <svg class="recharts-surface" width={GAUGE_SIZE} height={GAUGE_SIZE} viewBox={`0 0 ${GAUGE_SIZE} ${GAUGE_SIZE}`} style="width: 100%; height: 100%; display: block;">
+          <!-- 进场时圆环从 12 点方向顺时针扫出（对应 recharts 的扇区展开动画）；未播放动画时遮罩完全显示 -->
+          <mask id={maskId}>
+            <circle class="tour-a-draw" style={`--i:${order}`} pathLength="1" cx={c} cy={c} r={GAUGE_MID} fill="none" stroke="#fff" stroke-width={GAUGE_BAND} transform={`rotate(-90 ${c} ${c})`} />
+          </mask>
+          <g class="recharts-layer recharts-pie" mask={`url(#${maskId})`}>
+            <path class="recharts-sector" cx={c} cy={c} stroke="none" fill={gauge.color} d={sectors.used} />
+            <path class="recharts-sector" cx={c} cy={c} stroke="none" fill="var(--color-muted)" d={sectors.free} />
+          </g>
+        </svg>
+      </div>
+      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <span class="text-2xl font-bold tabular-nums tracking-tight" data-tour-count>{formatPercent(gauge.percent)}</span>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2.5 min-w-0 flex-1">
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="size-2.5 rounded-full shrink-0" style={`background-color: ${gauge.color};`}></span>
+            <span class="text-muted-foreground">已用</span>
+          </div>
+          <span class="font-medium tabular-nums">{gauge.used}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="size-2.5 rounded-full bg-muted shrink-0"></span>
+            <span class="text-muted-foreground">总量</span>
+          </div>
+          <span class="font-medium tabular-nums">{gauge.total}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

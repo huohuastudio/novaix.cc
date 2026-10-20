@@ -1,0 +1,27 @@
+---
+// 后台的加载指示（ui/src/components/ui/spinner.tsx）：8 条渐变短线组成的圆环
+import { cn } from "../ui";
+
+interface Props {
+  class?: string;
+}
+
+// 展台中只用到小号（后台 size="sm"）
+const { class: className } = Astro.props;
+---
+
+<svg class={cn("size-3.5", "animate-spinner-fade", className)} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  {Array.from({ length: 8 }).map((_, i) => (
+    <line
+      x1="12"
+      y1="2"
+      x2="12"
+      y2="6"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      opacity={0.125 + i * 0.125}
+      transform={`rotate(${i * 45} 12 12)`}
+    />
+  ))}
+</svg>

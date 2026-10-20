@@ -25,6 +25,15 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    label: "供应商",
+    items: [
+      { title: "供应商连接", icon: "cable" },
+      { title: "模块商品", icon: "package-open" },
+      { title: "服务管理", icon: "boxes" },
+      { title: "待处理", icon: "clipboard-list" },
+    ],
+  },
+  {
     label: "用户",
     items: [
       { title: "用户管理", icon: "users" },

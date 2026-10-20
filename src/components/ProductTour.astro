@@ -1,406 +1,223 @@
 ---
-interface Tab {
-  id: string;
-  label: string;
-  title: string;
-  description: string;
-  features: string[];
-  image: string;
-  imageAlt: string;
+// 产品能力：左侧功能列表，右侧为代码还原的后台界面展台
+import "./tour/tour.css";
+import Icon from "./demo/Icon.astro";
+import InstancesTour from "./tour/modules/InstancesTour.astro";
+import NetworkTour from "./tour/modules/NetworkTour.astro";
+import OpsTour from "./tour/modules/OpsTour.astro";
+import BillingTour from "./tour/modules/BillingTour.astro";
+import SupplierTour from "./tour/modules/SupplierTour.astro";
+import SecurityTour from "./tour/modules/SecurityTour.astro";
+import CmsTour from "./tour/modules/CmsTour.astro";
+import ExtendTour from "./tour/modules/ExtendTour.astro";
+
+interface Feature {
+  text: string;
+  /** 悬停时在展台中高亮的区域：data-tour-target 的值，或 nav:菜单名 */
+  spot?: string;
 }
 
-const tabs: Tab[] = [
+interface Module {
+  id: string;
+  label: string;
+  icon: string;
+  title: string;
+  description: string;
+  features: Feature[];
+  stage: typeof InstancesTour;
+}
+
+const modules: Module[] = [
   {
     id: "instances",
     label: "实例管理",
+    icon: "monitor-cog",
     title: "实例全生命周期管理",
     description: "容器与虚拟机统一管控，从创建到销毁的每个环节都有对应操作。支持 Linux 和 Windows，NAT 与独立 IP 自由选择。",
     features: [
-      "启停、重装、快照、重置密码、VNC 控制台",
-      "批量创建实例，一次下单开通多台",
-      "升级/降级套餐，端口转发与防火墙",
-      "Windows 完整支持（TPM/ISO 双挂载/密码重置）",
-      "SSE 实时任务追踪，操作状态自动刷新",
+      { text: "启停、重装、快照、重置密码、VNC 控制台", spot: "actions" },
+      { text: "批量创建实例，一次下单开通多台", spot: "nav:实例管理" },
+      { text: "升级/降级套餐，端口转发与防火墙", spot: "tabs" },
+      { text: "Windows 完整支持（TPM/ISO 双挂载/密码重置）", spot: "nav:ISO 镜像" },
+      { text: "SSE 实时任务追踪，操作状态自动刷新", spot: "tasks" },
     ],
-    image: "/screenshots/instance-detail.png",
-    imageAlt: "实例详情页面",
+    stage: InstancesTour,
   },
   {
     id: "network",
     label: "网络管理",
+    icon: "network",
     title: "灵活的网络架构",
     description: "VPC 私有网络实现多实例内网互联，安全组精确控制流量。支持 IPv4/IPv6 双栈，共享 IP 与独立 IP 灵活搭配。",
     features: [
-      "VPC 私有网络，多实例安全互联",
-      "安全组与 ACL 规则，精确控制出入站流量",
-      "IP 池管理，批量分配与回收",
-      "共享 IP + NAT 端口转发，节省 IPv4 成本",
-      "IPv6 支持，纯 IPv6 套餐或 NAT+IPv6 灵活选择",
+      { text: "VPC 私有网络，多实例安全互联", spot: "vpc" },
+      { text: "安全组与 ACL 规则，精确控制出入站流量", spot: "nav:私有网络" },
+      { text: "IP 池管理，批量分配与回收", spot: "pools" },
+      { text: "共享 IP + NAT 端口转发，节省 IPv4 成本", spot: "nav:共享 IP" },
+      { text: "IPv6 支持，纯 IPv6 套餐或 NAT+IPv6 灵活选择", spot: "ipv6" },
     ],
-    image: "/screenshots/vpcs.png",
-    imageAlt: "VPC 网络管理",
+    stage: NetworkTour,
   },
   {
     id: "ops",
     label: "运维监控",
+    icon: "activity",
     title: "企业级运维能力",
     description: "区域化管理全球节点，实时监控资源使用。HA 高可用确保业务零中断，仪表盘一眼掌握全局态势。",
     features: [
-      "区域管理，节点按地理位置分组",
-      "节点实时监控，CPU/内存/磁盘/网络趋势图",
-      "节点组集群，在线热迁移",
-      "HA 高可用，节点故障自动疏散实例",
-      "仪表盘：世界地图、收入趋势、资源进度条",
+      { text: "区域管理，节点按地理位置分组", spot: "nav:区域管理" },
+      { text: "节点实时监控，CPU/内存/磁盘/网络趋势图", spot: "charts" },
+      { text: "节点组集群，在线热迁移", spot: "nav:节点管理" },
+      { text: "HA 高可用，节点故障自动疏散实例", spot: "nav:告警记录" },
+      { text: "仪表盘：世界地图、收入趋势、资源进度条", spot: "nav:仪表盘" },
     ],
-    image: "/screenshots/node-stats.png",
-    imageAlt: "节点监控统计",
+    stage: OpsTour,
   },
   {
     id: "billing",
     label: "商业运营",
+    icon: "shopping-cart",
     title: "完整的商业闭环",
     description: "从套餐定价到收款发票，一套系统覆盖 VPS 销售的全部商业环节。代理分销体系帮你快速建立分销网络。",
     features: [
-      "月付/季付/年付/小时计费，自动扣费与暂停",
-      "多支付渠道，插件化扩展更多网关",
-      "发票系统，用户自助申请，管理员审核",
-      "工单系统，部门分类 / 指派 / SLA 时限",
-      "代理分销，差异化返佣与折扣矩阵",
+      { text: "月付/季付/年付/小时计费，自动扣费与暂停", spot: "cycle" },
+      { text: "多支付渠道，插件化扩展更多网关", spot: "nav:支付记录" },
+      { text: "发票系统，用户自助申请，管理员审核", spot: "nav:发票管理" },
+      { text: "工单系统，部门分类 / 指派 / SLA 时限", spot: "nav:工单系统" },
+      { text: "代理分销，差异化返佣与折扣矩阵", spot: "nav:代理管理" },
     ],
-    image: "/screenshots/billing.png",
-    imageAlt: "订单管理界面",
+    stage: BillingTour,
+  },
+  {
+    id: "supplier",
+    label: "供应商转售",
+    icon: "cable",
+    title: "对接上游，转售即开通",
+    description: "把上游供应商的云服务器作为模块商品上架销售。用户付款后自动在上游下单开通，续费、到期暂停、逾期退订同步完成，没有自有机器也能开展业务。",
+    features: [
+      { text: "内置魔方业务系统、魔方财务、WHMCS、雨云插件", spot: "nav:供应商连接" },
+      { text: "模块商品独立定价，与自营共用余额、订单与发票", spot: "nav:模块商品" },
+      { text: "开通、续费、暂停、退订自动同步到上游", spot: "status" },
+      { text: "操作排队执行、自动重试，异常进入待处理队列", spot: "attention" },
+      { text: "上游余额查询与不足提醒，定时同步与对账", spot: "balance" },
+    ],
+    stage: SupplierTour,
   },
   {
     id: "security",
     label: "安全认证",
+    icon: "shield-check",
     title: "多层安全防护",
     description: "从用户登录到敏感操作，每一步都有对应的安全策略。内置多种认证方式，40+ 项安全加固措施。",
     features: [
-      "TOTP 两步验证，敏感操作二次确认",
-      "社交登录（GitHub/Google/微信/OIDC + 插件扩展）",
-      "实名认证（身份核验 + H5 人脸识别）",
-      "人机验证（极验/reCAPTCHA/hCaptcha/Turnstile）",
-      "HTTPS 强制、SSRF 防护、CSP 策略等 40+ 安全加固",
+      { text: "TOTP 两步验证，敏感操作二次确认", spot: "totp" },
+      { text: "社交登录（GitHub/Google/微信/OIDC + 插件扩展）", spot: "nav:插件" },
+      { text: "实名认证（身份核验 + H5 人脸识别）", spot: "kyc" },
+      { text: "人机验证（极验/reCAPTCHA/hCaptcha/Turnstile）", spot: "nav:插件" },
+      { text: "HTTPS 强制、SSRF 防护、CSP 策略等 40+ 安全加固", spot: "nav:系统设置" },
     ],
-    image: "/screenshots/users.png",
-    imageAlt: "用户管理界面",
+    stage: SecurityTour,
   },
   {
     id: "cms",
     label: "站点建设",
+    icon: "square-pen",
     title: "自建品牌官网",
     description: "内置 CMS 覆盖官网运营所需的全部内容模块，无需额外搭建营销站点。主题热切换，打造品牌差异化。",
     features: [
-      "14 个 CMS 子模块：公告、文章、FAQ、帮助中心等",
-      "自定义页面与导航菜单",
-      "主题市场，社区主题一键安装和切换",
-      "选购页面自动生成，支持区域与套餐筛选",
-      "SEO 优化，站点描述与关键词配置",
+      { text: "14 个 CMS 子模块：公告、文章、FAQ、帮助中心等", spot: "modules" },
+      { text: "自定义页面与导航菜单", spot: "pages" },
+      { text: "主题市场，社区主题一键安装和切换", spot: "theme" },
+      { text: "选购页面自动生成，支持区域与套餐筛选", spot: "nav:套餐管理" },
+      { text: "SEO 优化，站点描述与关键词配置", spot: "nav:系统设置" },
     ],
-    image: "/screenshots/cms.png",
-    imageAlt: "CMS 内容管理",
+    stage: CmsTour,
   },
   {
     id: "extend",
     label: "扩展生态",
+    icon: "blocks",
     title: "开放与可扩展",
     description: "插件系统覆盖支付、短信、邮件、认证、通知五大类。Provisioning API 与 Webhook 开放集成，前端源码完全开源。",
     features: [
-      "JS 插件引擎，一键安装/热重载/导出打包",
-      "支付/短信/邮件/认证/通知 五大类插件",
-      "Provisioning API + Webhook 开放集成",
-      "CLI 管理工具，终端直接运维",
-      "前端源码开源，深度定制无限制",
+      { text: "JS 插件引擎，一键安装/热重载/导出打包", spot: "plugin-actions" },
+      { text: "支付/短信/邮件/认证/通知 五大类插件", spot: "categories" },
+      { text: "Provisioning API + Webhook 开放集成", spot: "nav:集成方" },
+      { text: "CLI 管理工具，终端直接运维" },
+      { text: "前端源码开源，深度定制无限制" },
     ],
-    image: "/screenshots/plugins.png",
-    imageAlt: "插件管理界面",
+    stage: ExtendTour,
   },
 ];
 ---
+
 <section id="features" class="page-section">
   <div class="mx-auto max-w-6xl">
     <div data-animate>
-      <h2 class="section-title">
-        产品能力
-      </h2>
-      <p class="section-lead max-w-lg">
-        从实例管理到商业运营，从安全认证到生态扩展，覆盖 IDC 运营全链路。
-      </p>
+      <h2 class="section-title">产品能力</h2>
+      <p class="section-lead max-w-lg">从实例管理到供应商转售，从商业运营到生态扩展，覆盖 IDC 运营全链路。</p>
     </div>
 
-    <!-- Tab 导航 -->
-    <div role="tablist" aria-label="产品能力" class="mt-10 flex overflow-x-auto border-b border-zinc-200 dark:border-white/[0.08]" data-animate style="--stagger:.1s">
-      {tabs.map((tab, i) => (
-        <button
-          role="tab"
-          id={`tour-tab-${tab.id}`}
-          aria-controls={`tour-panel-${tab.id}`}
-          aria-selected={i === 0 ? "true" : "false"}
-          data-tab={tab.id}
-          data-active={i === 0 ? "" : undefined}
-          class="tour-tab relative shrink-0 px-4 py-3 text-sm font-medium text-zinc-500 dark:text-slate-400 transition-colors after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-brand dark:after:bg-glow after:opacity-0 dark:after:shadow-[0_0_12px_1px_var(--color-glow)] after:transition-opacity hover:text-zinc-900 dark:hover:text-white data-[active]:text-zinc-900 dark:data-[active]:text-white data-[active]:after:opacity-100"
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-
-    <!-- Tab 内容 -->
-    <div class="mt-10" data-animate style="--stagger:.15s">
-      {tabs.map((tab, i) => (
-        <div
-          role="tabpanel"
-          id={`tour-panel-${tab.id}`}
-          aria-labelledby={`tour-tab-${tab.id}`}
-          data-panel={tab.id}
-          class:list={[
-            "tour-panel grid items-center gap-10 lg:grid-cols-[1fr_1.3fr] lg:gap-14",
-            i !== 0 && "hidden",
-          ]}
-        >
-          <div>
-            <h3 class="font-display text-xl font-bold tracking-tight text-zinc-900 dark:text-white">{tab.title}</h3>
-            <p class="mt-3 leading-relaxed text-zinc-500 dark:text-slate-400">{tab.description}</p>
-            <ul class="mt-6 space-y-3">
-              {tab.features.map((f) => (
-                <li class="flex items-start gap-3 text-[0.9rem] text-zinc-600 dark:text-slate-300">
-                  <span class="led mt-[0.55em]"></span>
-                  {f}
-                </li>
-              ))}
-            </ul>
+    <div data-tour data-stopped class="mt-12 grid items-center gap-10 lg:mt-16 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-14">
+      <!-- 功能列表 -->
+      <div class="order-2 lg:order-1" data-animate style="--stagger:.1s">
+        {modules.map((m, i) => (
+          <div data-tour-item={m.id} data-active={i === 0 ? "" : undefined} class="group/item relative border-l border-zinc-200 dark:border-white/[0.08]">
+            <span data-tour-progress class="tour-progress absolute top-0 -left-px h-full w-0.5 bg-brand dark:bg-glow dark:shadow-[0_0_10px_var(--color-glow)]"></span>
+            <h3>
+              <button
+                type="button"
+                id={`tour-tab-${m.id}`}
+                aria-expanded={i === 0 ? "true" : "false"}
+                aria-controls={`tour-detail-${m.id}`}
+                class="flex w-full cursor-pointer items-center gap-3 py-3 pr-2 pl-5 text-left text-[0.95rem] font-medium text-zinc-500 transition-colors hover:text-zinc-900 group-data-[active]/item:text-zinc-900 dark:text-slate-400 dark:hover:text-white dark:group-data-[active]/item:text-white"
+              >
+                <Icon name={m.icon} class="size-[1.05rem] shrink-0 opacity-70 group-data-[active]/item:text-brand group-data-[active]/item:opacity-100 dark:group-data-[active]/item:text-glow" />
+                {m.label}
+              </button>
+            </h3>
+            <div id={`tour-detail-${m.id}`} role="region" aria-labelledby={`tour-tab-${m.id}`} class="tour-detail">
+              <div>
+                <div class="pr-2 pb-5 pl-5">
+                  <p class="font-display text-lg font-bold tracking-tight text-zinc-900 dark:text-white">{m.title}</p>
+                  <p class="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-slate-400">{m.description}</p>
+                  <ul class="mt-4 space-y-1">
+                    {m.features.map((f) => (
+                      <li
+                        data-spot={f.spot}
+                        class:list={[
+                          "-mx-2 flex items-start gap-3 rounded-md px-2 py-1 text-[0.875rem] text-zinc-600 transition-colors dark:text-slate-300",
+                          f.spot && "cursor-default hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/[0.05] dark:hover:text-white",
+                        ]}
+                      >
+                        <span class="led mt-[0.6em]"></span>
+                        {f.text}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <button
-              type="button"
-              data-zoom={i}
-              aria-label={`查看大图：${tab.imageAlt}`}
-              class="tour-zoom shot group relative block w-full cursor-pointer overflow-hidden transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
-            >
-              <img src={tab.image} alt={tab.imageAlt} class="w-full object-cover object-top" loading="lazy" />
-              <span class="pointer-events-none absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-zinc-900/75 px-3 py-1.5 text-xs font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
-                点击查看大图
-              </span>
-            </button>
+        ))}
+      </div>
+
+      <!-- 展台 -->
+      <div class="order-1 lg:order-2" data-animate style="--stagger:.15s">
+        <div data-tour-column class="py-2 lg:py-10 lg:pr-6 xl:pr-0">
+          <div data-tour-stack class="tour-stack">
+            {modules.map((m, i) => (
+              <m.stage initial={i === 0} />
+            ))}
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-
-  <!-- 大图灯箱：可在全部能力之间切换浏览 -->
-  <dialog id="tour-lightbox" aria-label="产品截图大图" class="tour-lightbox">
-    <div class="flex h-full w-full flex-col items-center justify-center gap-5 px-4 pt-14 pb-24 outline-none sm:px-20 sm:pb-14" data-lb-stage tabindex="-1" autofocus>
-      <img data-lb-img alt="" class="max-h-[72vh] w-auto max-w-full rounded-lg object-contain shadow-[0_30px_120px_-20px_rgba(47,107,255,0.5)] ring-1 ring-white/10" />
-      <div class="max-w-3xl text-center">
-        <p class="text-xs font-medium tracking-wide text-slate-400"><span data-lb-label></span> · <span data-lb-count></span></p>
-        <h3 data-lb-title class="mt-1.5 font-display text-lg font-bold text-white sm:text-xl"></h3>
-        <p data-lb-desc class="mt-2 hidden text-sm leading-relaxed text-slate-300 sm:block"></p>
       </div>
     </div>
-
-    <button type="button" data-lb-close aria-label="关闭" class="lb-btn top-4 right-4">
-      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-    </button>
-    <button type="button" data-lb-prev aria-label="上一张" class="lb-btn bottom-6 left-[calc(50%-3.5rem)] sm:top-1/2 sm:bottom-auto sm:left-6 sm:-translate-y-1/2">
-      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-    </button>
-    <button type="button" data-lb-next aria-label="下一张" class="lb-btn bottom-6 right-[calc(50%-3.5rem)] sm:top-1/2 sm:right-6 sm:bottom-auto sm:-translate-y-1/2">
-      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-    </button>
-  </dialog>
+  </div>
 </section>
 
-<style>
-  /* 切换时新面板淡入 */
-  .tour-panel:not(.hidden) {
-    animation: tour-in 0.35s ease-out;
-  }
-
-  @keyframes tour-in {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-  }
-
-  /* 灯箱：铺满视口，深色模糊背景 */
-  .tour-lightbox {
-    width: 100vw;
-    height: 100dvh;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    overflow: hidden;
-  }
-
-  .tour-lightbox::backdrop {
-    background: rgba(5, 7, 13, 0.88);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-
-  .tour-lightbox[open] {
-    animation: lb-in 0.25s ease-out;
-  }
-
-  .tour-lightbox[open]::backdrop {
-    animation: lb-fade 0.25s ease-out;
-  }
-
-  .lb-btn {
-    position: absolute;
-    display: flex;
-    width: 2.75rem;
-    height: 2.75rem;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.06);
-    color: #e2e8f0;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
-  }
-
-  .lb-btn:hover {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.25);
-  }
-
-  .lb-btn:focus-visible {
-    outline: 2px solid var(--color-brand);
-    outline-offset: 2px;
-  }
-
-  [data-lb-img].is-switching {
-    opacity: 0;
-    transform: scale(0.985);
-  }
-
-  [data-lb-img] {
-    transition: opacity 0.2s, transform 0.2s;
-  }
-
-  @keyframes lb-in {
-    from {
-      opacity: 0;
-      transform: scale(0.97);
-    }
-  }
-
-  @keyframes lb-fade {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .tour-panel:not(.hidden),
-    .tour-lightbox[open],
-    .tour-lightbox[open]::backdrop {
-      animation: none;
-    }
-    [data-lb-img] {
-      transition: none;
-    }
-  }
-</style>
-
 <script>
-  const tabBtns = document.querySelectorAll<HTMLButtonElement>(".tour-tab");
-  const panels = document.querySelectorAll<HTMLDivElement>(".tour-panel");
+  import { initTour } from "./tour/tour";
 
-  function activateTab(id: string | undefined) {
-    tabBtns.forEach((b) => {
-      const active = b.dataset.tab === id;
-      b.toggleAttribute("data-active", active);
-      b.setAttribute("aria-selected", String(active));
-    });
-    panels.forEach((p) => {
-      p.classList.toggle("hidden", p.dataset.panel !== id);
-    });
-  }
-
-  tabBtns.forEach((btn) => {
-    btn.addEventListener("click", () => activateTab(btn.dataset.tab));
-  });
-
-  // 大图灯箱：内容直接取自各面板，保证与页面文案一致
-  const lb = document.getElementById("tour-lightbox") as HTMLDialogElement | null;
-  if (lb) {
-    const slides = Array.from(panels).map((p) => ({
-      id: p.dataset.panel,
-      label: document.getElementById(`tour-tab-${p.dataset.panel}`)?.textContent?.trim() ?? "",
-      title: p.querySelector("h3")?.textContent ?? "",
-      desc: p.querySelector("h3 + p")?.textContent ?? "",
-      src: p.querySelector("img")?.getAttribute("src") ?? "",
-      alt: p.querySelector("img")?.getAttribute("alt") ?? "",
-    }));
-    const img = lb.querySelector<HTMLImageElement>("[data-lb-img]")!;
-    const label = lb.querySelector("[data-lb-label]")!;
-    const count = lb.querySelector("[data-lb-count]")!;
-    const title = lb.querySelector("[data-lb-title]")!;
-    const desc = lb.querySelector("[data-lb-desc]")!;
-    let current = 0;
-
-    const render = (i: number, animate = true) => {
-      current = (i + slides.length) % slides.length;
-      const s = slides[current];
-      const apply = () => {
-        img.src = s.src;
-        img.alt = s.alt;
-        label.textContent = s.label;
-        count.textContent = `${current + 1} / ${slides.length}`;
-        title.textContent = s.title;
-        desc.textContent = s.desc;
-        img.classList.remove("is-switching");
-      };
-      if (!animate) return apply();
-      img.classList.add("is-switching");
-      setTimeout(apply, 150);
-    };
-
-    document.querySelectorAll<HTMLButtonElement>("[data-zoom]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        render(Number(btn.dataset.zoom), false);
-        lb.showModal();
-        document.documentElement.style.overflow = "hidden";
-      });
-    });
-
-    lb.querySelector("[data-lb-prev]")!.addEventListener("click", () => render(current - 1));
-    lb.querySelector("[data-lb-next]")!.addEventListener("click", () => render(current + 1));
-    lb.querySelector("[data-lb-close]")!.addEventListener("click", () => lb.close());
-
-    // 点击图片和文字以外的空白区域关闭
-    lb.addEventListener("click", (e) => {
-      if (e.target === lb || (e.target as HTMLElement).hasAttribute("data-lb-stage")) lb.close();
-    });
-
-    lb.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft") render(current - 1);
-      if (e.key === "ArrowRight") render(current + 1);
-    });
-
-    // 触屏左右滑动切换
-    let touchX: number | null = null;
-    lb.addEventListener("touchstart", (e) => { touchX = e.touches[0].clientX; }, { passive: true });
-    lb.addEventListener("touchend", (e) => {
-      if (touchX === null) return;
-      const dx = e.changedTouches[0].clientX - touchX;
-      touchX = null;
-      if (Math.abs(dx) > 50) render(current + (dx < 0 ? 1 : -1));
-    });
-
-    // 关闭后页面 Tab 停在最后浏览的能力上
-    lb.addEventListener("close", () => {
-      document.documentElement.style.overflow = "";
-      activateTab(slides[current].id);
-    });
-  }
+  document.querySelectorAll<HTMLElement>("[data-tour]").forEach(initTour);
 </script>

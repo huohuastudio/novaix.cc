@@ -12,18 +12,37 @@ interface Props {
   breadcrumb: string[];
   /** 地址栏显示的路径 */
   path?: string;
+  /** 侧边栏收起为图标模式 */
+  collapsed?: boolean;
+  /** 后台视口尺寸 */
+  width?: number;
+  height?: number;
+  /** 静态展示：不初始化交互，缩放由外层负责（未执行脚本时按 0.55 显示） */
+  static?: boolean;
+  /** 顶栏任务按钮上的进行中任务数，0 时不显示角标 */
+  taskCount?: number;
   class?: string;
 }
 
-const { active, breadcrumb, path = "/admin", class: className = "" } = Astro.props;
-
 import { APP_HEIGHT, APP_WIDTH, CHROME_HEIGHT } from "./admin-frame";
 
-const totalHeight = APP_HEIGHT + CHROME_HEIGHT;
+const {
+  active,
+  breadcrumb,
+  path = "/admin",
+  collapsed = false,
+  width = APP_WIDTH,
+  height = APP_HEIGHT,
+  static: isStatic = false,
+  taskCount = 0,
+  class: className = "",
+} = Astro.props;
 
-const toolbar = [
+const totalHeight = height + CHROME_HEIGHT;
+
+const toolbar: { icon: string; tip: string; button: string; badge?: number }[] = [
   { icon: "circle-question-mark", tip: "新手教程", button: ghostButton },
-  { icon: "list-todo", tip: "任务列表", button: ghostButtonSm },
+  { icon: "list-todo", tip: "任务列表", button: `${ghostButtonSm} relative`, badge: taskCount },
   { icon: "megaphone", tip: "广播通知", button: ghostButton },
   { icon: "external-link", tip: "前台门户", button: ghostButton },
   { icon: "settings", tip: "系统设置", button: ghostButton },
@@ -32,10 +51,11 @@ const toolbar = [
 
 <div
   data-nx-frame
+  data-nx-static={isStatic ? "" : undefined}
   class={`nx-frame relative w-full overflow-hidden select-none ${className}`}
-  style={`aspect-ratio:${APP_WIDTH}/${totalHeight};--nx-s:0.8667`}
+  style={`aspect-ratio:${width}/${totalHeight};--nx-s:${isStatic ? 0.55 : 0.8667}`}
 >
-  <div class="nx-frame-inner absolute top-0 left-0" style={`width:${APP_WIDTH}px;height:${totalHeight}px`}>
+  <div class="nx-frame-inner absolute top-0 left-0" style={`width:${width}px;height:${totalHeight}px`}>
     <!-- 浏览器标题栏 -->
     <div
       class="relative flex items-center border-b border-black/[0.08] bg-[#ececec] px-4 dark:border-white/[0.06] dark:bg-[#1c1c1e]"
@@ -54,7 +74,7 @@ const toolbar = [
       </div>
     </div>
 
-    <div class="nx-app relative overflow-hidden" style={`width:${APP_WIDTH}px;height:${APP_HEIGHT}px`}>
+    <div class="nx-app relative overflow-hidden" style={`width:${width}px;height:${height}px`}>
       <div
         data-slot="sidebar-wrapper"
         class="group/sidebar-wrapper flex h-full w-full overflow-hidden has-data-[variant=inset]:bg-sidebar"
@@ -63,8 +83,8 @@ const toolbar = [
         <!-- 侧边栏 -->
         <div
           class="group peer block text-sidebar-foreground"
-          data-state="expanded"
-          data-collapsible=""
+          data-state={collapsed ? "collapsed" : "expanded"}
+          data-collapsible={collapsed ? "icon" : ""}
           data-variant="inset"
           data-side="left"
           data-slot="sidebar"
@@ -205,6 +225,11 @@ const toolbar = [
               {toolbar.map((t) => (
                 <button type="button" data-nx-tip={t.tip} data-nx-tip-side="bottom" class={t.button}>
                   <Icon name={t.icon} class="size-4" />
+                  {!!t.badge && (
+                    <span class="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-primary text-2xs font-medium text-primary-foreground">
+                      {t.badge}
+                    </span>
+                  )}
                 </button>
               ))}
               <!-- 主题按钮跟随官网当前主题显示，复用 global.css 中 .theme-toggle 的图标切换规则 -->
@@ -222,6 +247,8 @@ const toolbar = [
           </div>
         </main>
       </div>
+
+      <slot name="overlay" />
 
       <!-- 提示框（新手教程、侧边栏收起后的菜单名等共用） -->
       <div
@@ -251,5 +278,5 @@ const toolbar = [
 <script>
   import { initAdminFrame } from "./admin-frame";
 
-  document.querySelectorAll<HTMLElement>("[data-nx-frame]").forEach(initAdminFrame);
+  document.querySelectorAll<HTMLElement>("[data-nx-frame]:not([data-nx-static])").forEach(initAdminFrame);
 </script>

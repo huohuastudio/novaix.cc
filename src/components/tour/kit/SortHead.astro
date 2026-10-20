@@ -1,0 +1,24 @@
+---
+// 数据表格的表头单元格（DataTable）。sortable 时带排序按钮与图标
+import Icon from "../../demo/Icon.astro";
+import { tableHead } from "../ui";
+
+interface Props {
+  sortable?: boolean;
+  class?: string;
+  [attr: string]: unknown;
+}
+
+const { sortable = false, class: className, ...attrs } = Astro.props;
+---
+
+<th data-slot="table-head" class={tableHead(className)} {...attrs}>
+  {sortable ? (
+    <button type="button" class="flex items-center gap-1 transition-colors hover:text-foreground">
+      <slot />
+      <Icon name="arrow-up-down" class="size-3.5 opacity-50" />
+    </button>
+  ) : (
+    <slot />
+  )}
+</th>

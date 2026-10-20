@@ -1,6 +1,6 @@
 ---
-// 渲染与后台一致的 lucide 图标
-import { icons } from "./icons";
+// 渲染与后台一致的 lucide 图标：读取与后台 lucide-react 同版本的 lucide 包（仅构建时使用，不进入浏览器脚本）
+import { icons } from "lucide";
 
 interface Props {
   name: string;
@@ -9,8 +9,15 @@ interface Props {
 }
 
 const { name, class: className = "", ...attrs } = Astro.props;
-const body = icons[name];
-if (!body) throw new Error(`未知图标：${name}`);
+
+// lucide 包以 PascalCase 导出图标，例如 arrow-up-down → ArrowUpDown、disc3 → Disc3
+const pascal = name
+  .split("-")
+  .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+  .join("");
+const node = (icons as Record<string, [string, Record<string, string | number>][]>)[pascal];
+if (!node) throw new Error(`未知图标：${name}`);
+const body = node.map(([tag, a]) => `<${tag}${Object.entries(a).map(([k, v]) => ` ${k}="${v}"`).join("")}></${tag}>`).join("");
 ---
 
 <svg

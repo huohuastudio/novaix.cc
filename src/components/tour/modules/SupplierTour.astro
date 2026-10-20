@@ -1,0 +1,298 @@
+---
+// 供应商转售：服务管理列表（ui/src/pages/admin/supplier/services/index.tsx）
+// + 浮起的人工处理对话框（components/supplier-operation-dialogs.tsx 的 OperationResolveDialog，来自「待处理」页）
+// + 浮起的供应商连接列表局部（pages/admin/supplier/connections/index.tsx 的 名称 / 插件 / 状态 / 上游余额 四列）
+import TourStage from "../TourStage.astro";
+import TourFloat from "../TourFloat.astro";
+import SelectTrigger from "../kit/SelectTrigger.astro";
+import Pagination from "../kit/Pagination.astro";
+import Spinner from "../kit/Spinner.astro";
+import SortHead from "../kit/SortHead.astro";
+import DialogClose from "../kit/DialogClose.astro";
+import {
+  badge,
+  button,
+  dialogContent,
+  dialogDescription,
+  dialogFooter,
+  dialogHeader,
+  dialogTitle,
+  input,
+  label,
+  table,
+  tableBody,
+  tableCell,
+  tableHeader,
+  tableRow,
+  textarea,
+  type BadgeVariant,
+} from "../ui";
+
+interface Props {
+  initial?: boolean;
+}
+
+const { initial } = Astro.props;
+
+// ── 状态文案（lib/supplier-constants.ts） ──
+
+const serviceStatusMap: Record<string, { label: string; variant: BadgeVariant }> = {
+  pending: { label: "开通中", variant: "outline" },
+  active: { label: "运行中", variant: "default" },
+  suspended: { label: "已暂停", variant: "destructive" },
+  terminating: { label: "退订中", variant: "outline" },
+  terminated: { label: "已终止", variant: "secondary" },
+  cancelled: { label: "已取消", variant: "secondary" },
+};
+const suspendReasonMap: Record<string, string> = { expired: "到期暂停", admin: "管理员暂停" };
+const opTypeMap: Record<string, string> = {
+  create: "开通",
+  renew: "续费",
+  suspend: "暂停",
+  unsuspend: "恢复",
+  terminate: "退订",
+  action: "操作",
+  reconcile: "对账差异",
+};
+const opStatusMap: Record<string, { label: string; variant: BadgeVariant }> = {
+  queued: { label: "排队", variant: "outline" },
+  running: { label: "执行中", variant: "default" },
+  waiting: { label: "等待上游", variant: "outline" },
+  succeeded: { label: "成功", variant: "secondary" },
+  failed: { label: "失败", variant: "destructive" },
+  unknown: { label: "结果未知", variant: "destructive" },
+  manual: { label: "待人工处理", variant: "destructive" },
+  cancelled: { label: "已取消", variant: "secondary" },
+};
+const connectionStatusMap: Record<string, { label: string; variant: BadgeVariant }> = {
+  active: { label: "正常", variant: "default" },
+  maintenance: { label: "维护（停止新购）", variant: "outline" },
+  disabled: { label: "停用", variant: "secondary" },
+};
+const isOpActive = (s: string) => s === "queued" || s === "running" || s === "waiting";
+
+// ── 演示数据 ──
+
+interface Service {
+  id: number;
+  name: string;
+  reference: string;
+  user: string;
+  product: string;
+  connection: string;
+  status: keyof typeof serviceStatusMap;
+  reason?: string;
+  /** 完整到期时间，列表只显示日期部分 */
+  expire: string | null;
+  remote: string | null;
+  op?: { type: string; action?: string; status: string };
+}
+
+// 与「商业运营」模块的转售订单对应：#212 新购开通中、#208 今日续费、#205 今早新购
+const services: Service[] = [
+  { id: 212, name: "hk-shop-01", reference: "d3dd80f10d38db66fa14150749b50ae0", user: "zhangsan", product: "香港 CN2 2核4G", connection: "魔方云 · 香港", status: "pending", expire: null, remote: null, op: { type: "create", status: "waiting" } },
+  { id: 211, name: "sq-api-02", reference: "2ba6ccf397bc871438041879303d0bc2", user: "wangwu", product: "宿迁 BGP 2核2G", connection: "雨云", status: "active", expire: "2026/11/20 13:21", remote: "rcs-59310", op: { type: "action", action: "reboot", status: "running" } },
+  { id: 210, name: "jp-game-03", reference: "856971ecbb702f89e9950a252aa2be9a", user: "lisi", product: "东京 软银 2核4G", connection: "WHMCS 上游", status: "active", expire: "2026/11/20 11:58", remote: "8902" },
+  { id: 209, name: "hk-db-01", reference: "a7551d73d16b549dd691dd15e7f6005e", user: "zhaoliu", product: "香港 CN2 4核8G", connection: "魔方云 · 香港", status: "active", expire: "2027/01/20 10:42", remote: "100362" },
+  { id: 208, name: "sq-web-01", reference: "afb7e76c13ab460401534cd94d70c789", user: "chenqi", product: "宿迁 BGP 2核2G", connection: "雨云", status: "active", expire: "2026/11/26 18:05", remote: "rcs-59127" },
+  { id: 207, name: "us-proxy-02", reference: "a8c9a69836cf4577c932bc7dc9602221", user: "demo", product: "洛杉矶 9929 1核1G", connection: "魔方财务 · 美西", status: "suspended", reason: "expired", expire: "2026/10/18 09:20", remote: "71455" },
+  { id: 206, name: "hk-web-04", reference: "8073d4ebd9d8085f692714bb964602d4", user: "lisi", product: "香港 CN2 2核4G", connection: "魔方云 · 香港", status: "active", expire: "2026/10/24 16:08", remote: "100355", op: { type: "renew", status: "manual" } },
+  { id: 205, name: "jp-node-01", reference: "2dccb0b203cac731ab4adc733ffe18b9", user: "test01", product: "东京 软银 2核4G", connection: "WHMCS 上游", status: "active", expire: "2026/11/20 09:32", remote: "8897" },
+  { id: 204, name: "sq-game-01", reference: "63d71f1b1c8a0adef67dc7e93f9eec4d", user: "zhangsan", product: "宿迁 BGP 2核2G", connection: "雨云", status: "terminating", expire: "2026/10/13 18:45", remote: "rcs-58833", op: { type: "terminate", status: "queued" } },
+  { id: 203, name: "jp-proxy-01", reference: "f40795cd605d012171c65e5b86192cdf", user: "chenqi", product: "东京 软银 2核4G", connection: "WHMCS 上游", status: "terminated", expire: "2026/09/28 22:10", remote: "8761" },
+  { id: 202, name: "us-web-01", reference: "0c31b8965d899539b0aeff3f84abeaa0", user: "zhaoliu", product: "洛杉矶 9929 1核1G", connection: "魔方财务 · 美西", status: "active", expire: "2027/10/02 08:51", remote: "71398" },
+  { id: 201, name: "hk-node-02", reference: "4566474b551d68be1360f67b3b37724f", user: "wangwu", product: "香港 CN2 4核8G", connection: "魔方云 · 香港", status: "active", expire: "2027/04/16 11:03", remote: "100318" },
+];
+
+// 待人工处理的续费操作：自动续费超时，向上游查询到期时间未变化，无法确认结果
+const attention = {
+  id: 653,
+  type: "renew",
+  serviceId: 206,
+  error: "上游续费结果未知：请求超时，且查询到期时间未变化",
+};
+
+const resolveActions = [
+  { value: "retry", label: "重试", description: "沿用同一幂等键重新调用上游，适用于确认上游未执行或可安全重放的情况" },
+  { value: "mark_succeeded", label: "标记成功", description: "已在上游核对确认执行成功，可补录远端 ID 与上游到期时间" },
+  { value: "mark_failed", label: "标记失败", description: "已在上游核对确认未执行，按失败处理；开通或续费失败的订单可在「订单管理」中退款" },
+];
+
+// 供应商连接：余额低于告警阈值时标红
+const connections = [
+  { name: "魔方云 · 香港", plugin: "魔方业务系统", status: "active", balance: "¥3865.20", low: false },
+  { name: "雨云", plugin: "雨云", status: "active", balance: "¥1288.00", low: false },
+  { name: "WHMCS 上游", plugin: "WHMCS", status: "active", balance: "¥520.00", low: true },
+];
+const balanceCheckedAt = "2026/10/20 14:30";
+
+const td = tableCell();
+const radioItem =
+  "group/radio-group-item peer relative flex aspect-square size-4 shrink-0 rounded-full border border-input outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 aria-invalid:aria-checked:border-primary dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary mt-0.5";
+---
+
+<TourStage id="supplier" active="服务管理" breadcrumb={["服务管理"]} path="/admin/supplier/services" initial={initial}>
+  <div class="space-y-6 px-6 pt-6">
+    <div class="shrink-0">
+      <h1 class="text-2xl font-bold tracking-tight">服务管理</h1>
+      <p class="mt-1 text-sm text-muted-foreground">用户购买模块商品后开通的服务，可查看状态、同步上游并执行运维操作</p>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex shrink-0 flex-wrap items-center gap-3">
+        <input data-slot="input" class={input("h-8 w-[200px] min-w-0 flex-none")} placeholder="搜索名称/引用/远端 ID..." />
+        {["商品", "连接", "状态"].map((f) => <SelectTrigger placeholder={f} class="h-8 w-[150px] min-w-0" />)}
+      </div>
+
+      <div class="overflow-x-auto rounded-md transition-opacity duration-300">
+        <table class={table("min-w-[800px]")}>
+          <thead data-slot="table-header" class={tableHeader()}>
+            <tr data-slot="table-row" class={tableRow()}>
+              <SortHead>ID</SortHead>
+              <SortHead>名称</SortHead>
+              <SortHead>用户</SortHead>
+              <SortHead>商品</SortHead>
+              <SortHead>连接</SortHead>
+              <SortHead data-tour-target="status">状态</SortHead>
+              <SortHead>到期时间</SortHead>
+              <SortHead>远端 ID</SortHead>
+              <SortHead>当前操作</SortHead>
+            </tr>
+          </thead>
+          <tbody data-slot="table-body" class={tableBody()}>
+            {services.map((s, i) => {
+              const st = serviceStatusMap[s.status];
+              const transitional = s.status === "pending" || s.status === "terminating";
+              const op = s.op && opStatusMap[s.op.status];
+              return (
+                <tr data-slot="table-row" class={tableRow("tour-a-rise")} style={`--i:${i}`}>
+                  <td data-slot="table-cell" class={td}>{s.id}</td>
+                  <td data-slot="table-cell" class={td}>
+                    <div class="min-w-0">
+                      <a class="font-medium text-primary hover:underline">{s.name}</a>
+                      <span class="block max-w-44 truncate font-mono text-xs text-muted-foreground" title={s.reference}>{s.reference}</span>
+                    </div>
+                  </td>
+                  <td data-slot="table-cell" class={td}>
+                    <button class="cursor-pointer text-primary hover:underline" type="button" aria-haspopup="dialog" aria-expanded="false" data-state="closed" data-slot="popover-trigger">{s.user}</button>
+                  </td>
+                  <td data-slot="table-cell" class={td}>{s.product}</td>
+                  <td data-slot="table-cell" class={td}>{s.connection}</td>
+                  <td data-slot="table-cell" class={td} data-tour-target="status">
+                    <div class="space-y-0.5">
+                      <span data-slot="badge" data-variant={st.variant} class={badge(st.variant)} title={s.status === "suspended" && s.reason ? suspendReasonMap[s.reason] : undefined}>
+                        {transitional && <Spinner />}
+                        {st.label}
+                      </span>
+                      {s.status === "suspended" && s.reason && <div class="text-xs text-muted-foreground">{suspendReasonMap[s.reason]}</div>}
+                    </div>
+                  </td>
+                  <td data-slot="table-cell" class={td}>
+                    {s.expire ? <span title={s.expire}>{s.expire.split(" ")[0]}</span> : <span class="text-muted-foreground">-</span>}
+                  </td>
+                  <td data-slot="table-cell" class={td}>
+                    {s.remote ? <span class="block max-w-32 truncate font-mono text-xs" title={s.remote}>{s.remote}</span> : <span class="text-muted-foreground">-</span>}
+                  </td>
+                  <td data-slot="table-cell" class={td}>
+                    {s.op ? (
+                      <div class="flex items-center gap-1.5 text-xs whitespace-nowrap">
+                        {isOpActive(s.op.status) && <Spinner />}
+                        <span>{opTypeMap[s.op.type]}{s.op.action ? ` · ${s.op.action}` : ""}</span>
+                        {op && <span data-slot="badge" data-variant={op.variant} class={badge(op.variant, "text-2xs px-1 py-0")}>{op.label}</span>}
+                      </div>
+                    ) : (
+                      <span class="text-muted-foreground">-</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <Pagination total={212} />
+    </div>
+  </div>
+
+  <Fragment slot="floats">
+    <!-- 待处理队列中的人工处理对话框：续费结果无法确认，由管理员核对上游后选择处理方式 -->
+    <TourFloat x={60} y={228} w={512} z={110} scale={1.1} origin="0 0" radius="0.875rem">
+      <div role="dialog" data-state="open" data-slot="dialog-content" data-tour-target="attention" class={dialogContent("max-w-lg")}>
+        <div data-slot="dialog-header" class={dialogHeader()}>
+          <h2 data-slot="dialog-title" class={dialogTitle()}>处理操作 #{attention.id}</h2>
+          <p data-slot="dialog-description" class={dialogDescription()}>{opTypeMap[attention.type]} · 服务 #{attention.serviceId}</p>
+        </div>
+        <div class="space-y-4">
+          <p class="text-xs break-all text-destructive">{attention.error}</p>
+          <div role="radiogroup" data-slot="radio-group" class="grid w-full gap-2">
+            {resolveActions.map((a, i) => (
+              <label class="flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                <button type="button" role="radio" aria-checked={i === 0 ? "true" : "false"} data-state={i === 0 ? "checked" : "unchecked"} value={a.value} data-slot="radio-group-item" class={radioItem}>
+                  {i === 0 && (
+                    <span data-state="checked" data-slot="radio-group-indicator" class="flex size-4 items-center justify-center">
+                      <span class="absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-foreground"></span>
+                    </span>
+                  )}
+                </button>
+                <div class="min-w-0">
+                  <div class="text-sm font-medium">{a.label}</div>
+                  <p class="mt-0.5 text-xs text-muted-foreground">{a.description}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <div class="space-y-2">
+            <label data-slot="label" class={label()}>备注</label>
+            <textarea data-slot="textarea" class={textarea()} placeholder="例如：已在上游核对，服务已开通" rows="2"></textarea>
+          </div>
+        </div>
+        <div data-slot="dialog-footer" class={dialogFooter()}>
+          <button type="button" data-slot="button" class={button("outline")}>取消</button>
+          <button type="button" data-slot="button" class={button("default")}>重试</button>
+        </div>
+        <DialogClose />
+      </div>
+    </TourFloat>
+
+    <!-- 供应商连接列表的局部：各上游的插件、状态与余额，余额低于告警阈值时标红 -->
+    <TourFloat x={856} y={408} w={400} z={80} scale={1.12} origin="0 0" radius="0.5rem" order={1}>
+      <div data-tour-target="balance" class="overflow-x-auto rounded-md dark:ring-1 dark:ring-foreground/10">
+        <table class={table()}>
+          <thead data-slot="table-header" class={tableHeader()}>
+            <tr data-slot="table-row" class={tableRow()}>
+              <SortHead>名称</SortHead>
+              <SortHead>插件</SortHead>
+              <SortHead>状态</SortHead>
+              <SortHead>上游余额</SortHead>
+            </tr>
+          </thead>
+          <tbody data-slot="table-body" class={tableBody()}>
+            {connections.map((c) => {
+              const st = connectionStatusMap[c.status];
+              return (
+                <tr data-slot="table-row" class={tableRow()}>
+                  <td data-slot="table-cell" class={td}>
+                    <div class="min-w-0">
+                      <button type="button" class="font-medium text-primary hover:underline">{c.name}</button>
+                    </div>
+                  </td>
+                  <td data-slot="table-cell" class={td}><span class="text-sm">{c.plugin}</span></td>
+                  <td data-slot="table-cell" class={td}>
+                    <span data-slot="badge" data-variant={st.variant} class={badge(st.variant)}>{st.label}</span>
+                  </td>
+                  <td data-slot="table-cell" class={td}>
+                    <div>
+                      <div class={c.low ? "font-medium text-destructive" : "font-medium"} data-tour-count>{c.balance}</div>
+                      <div class="text-xs text-muted-foreground">{balanceCheckedAt}</div>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </TourFloat>
+  </Fragment>
+</TourStage>

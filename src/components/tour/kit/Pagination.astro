@@ -1,0 +1,35 @@
+---
+// 数据表格底部分页（DataTable）
+import Icon from "../../demo/Icon.astro";
+import SelectTrigger from "./SelectTrigger.astro";
+import { button } from "../ui";
+
+interface Props {
+  total: number;
+}
+
+// 展台中始终停在第 1 页、每页 20 条
+const { total } = Astro.props;
+const page = 1;
+const pageSize = 20;
+const pages = Math.max(1, Math.ceil(total / pageSize));
+const pager = button("outline", "icon", "size-8");
+---
+
+<div class="flex shrink-0 items-center justify-between">
+  <div class="text-sm text-muted-foreground">共 {total} 条</div>
+  <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2">
+      <span class="text-sm">每页</span>
+      <SelectTrigger value={String(pageSize)} class="h-8 w-[70px]" />
+      <span class="text-sm">条</span>
+    </div>
+    <div class="flex items-center gap-1">
+      <button type="button" class={pager} disabled={page <= 1}><Icon name="chevrons-left" class="size-4" /></button>
+      <button type="button" class={pager} disabled={page <= 1}><Icon name="chevron-left" class="size-4" /></button>
+      <span class="px-2 text-sm">{page} / {pages}</span>
+      <button type="button" class={pager} disabled={page >= pages}><Icon name="chevron-right" class="size-4" /></button>
+      <button type="button" class={pager} disabled={page >= pages}><Icon name="chevrons-right" class="size-4" /></button>
+    </div>
+  </div>
+</div>

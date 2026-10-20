@@ -1,0 +1,158 @@
+---
+// 扩展生态：插件管理「已安装」列表（ui/src/pages/admin/plugins/index.tsx 的 InstalledPlugins）
+// + 浮起的「插件市场」插件卡片（同文件的 Marketplace）
+import TourStage from "../TourStage.astro";
+import TourFloat from "../TourFloat.astro";
+import Icon from "../../demo/Icon.astro";
+import PageHeader from "../kit/PageHeader.astro";
+import { badge, button, rowAction, rowActionDanger, tabs, tabsList, tabsTrigger } from "../ui";
+import Switch from "../kit/Switch.astro";
+
+interface Props {
+  initial?: boolean;
+}
+
+const { initial } = Astro.props;
+
+const typeLabels: Record<string, string> = {
+  payment: "支付",
+  captcha: "验证码",
+  sms: "短信",
+  mail: "邮件",
+  notify: "通知",
+  kyc: "认证",
+  oauth: "登录",
+  extension: "扩展",
+  supplier: "供应商",
+};
+
+interface Plugin {
+  name: string;
+  version: string;
+  type: keyof typeof typeLabels;
+  description: string;
+  enabled: boolean;
+}
+
+// 演示数据：官方插件市场中的真实插件
+const plugins: Plugin[] = [
+  { name: "易支付", version: "1.0.0", type: "payment", description: "兼容彩虹易支付 / ZPAY 等通用易支付规范，支持页面跳转和 API 出码两种模式", enabled: true },
+  { name: "短信宝", version: "1.0.0", type: "sms", description: "对接短信宝平台发送短信验证码，价格低廉，无需企业认证", enabled: true },
+  { name: "PushPlus", version: "1.0.0", type: "notify", description: "通过 PushPlus 推送系统通知到微信，适合不使用企业 IM 的管理员", enabled: false },
+  { name: "彩虹聚合登录", version: "1.0.0", type: "oauth", description: "对接彩虹聚合登录平台，支持 QQ、微信、支付宝、微博、哔哩哔哩、抖音等多种社交账号一键登录", enabled: true },
+  { name: "极验行为验证", version: "1.0.1", type: "captcha", description: "极验 CAPTCHA v4 行为验证（滑动/点选/无感），适用于登录、注册等场景的人机验证", enabled: true },
+  { name: "Telegram 机器人", version: "1.0.0", type: "extension", description: "通过 Telegram 按钮菜单查询服务器、确认电源操作并接收任务通知", enabled: true },
+];
+
+interface MarketItem {
+  name: string;
+  version: string;
+  type: keyof typeof typeLabels;
+  description: string;
+  installedVersion?: string;
+}
+
+// 插件市场：一个有新版本可更新，一个未安装
+const market: MarketItem[] = [
+  { name: "Telegram 机器人", version: "1.1.0", type: "extension", description: "通过 Telegram 按钮菜单查询服务器、确认电源操作并接收任务通知", installedVersion: "1.0.0" },
+  { name: "Cloudflare Turnstile", version: "1.0.0", type: "captcha", description: "Cloudflare Turnstile 免费人机验证，多数访客无需交互即可通过，适用于登录、注册等场景" },
+];
+
+const typeBadge = badge("secondary", "text-2xs px-1.5 py-0");
+const installedBadge = badge("outline", "text-2xs px-1.5 py-0");
+---
+
+<TourStage id="extend" active="插件" breadcrumb={["插件管理"]} path="/admin/plugins" initial={initial}>
+  <div class="space-y-6 px-6 pt-6">
+    <PageHeader title="插件管理" description="管理已安装的扩展插件，或从插件市场浏览安装">
+      <button type="button" data-slot="button" class={button("outline")}><Icon name="refresh-cw" class="size-4" />刷新</button>
+    </PageHeader>
+
+    <div dir="ltr" data-orientation="horizontal" data-slot="tabs" class={tabs()}>
+      <div role="tablist" data-slot="tabs-list" data-variant="default" data-orientation="horizontal" class={tabsList()}>
+        <button type="button" role="tab" data-state="active" data-slot="tabs-trigger" data-orientation="horizontal" class={tabsTrigger()}>已安装</button>
+        <button type="button" role="tab" data-state="inactive" data-slot="tabs-trigger" data-orientation="horizontal" class={tabsTrigger()}><Icon name="store" class="size-3.5" />插件市场</button>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <div dir="ltr" data-orientation="horizontal" data-slot="tabs" class={tabs("min-w-0")}>
+        <div
+          role="tablist"
+          data-slot="tabs-list"
+          data-variant="default"
+          data-orientation="horizontal"
+          data-tour-target="categories"
+          class={tabsList("default", "max-w-full overflow-x-auto overflow-y-hidden no-scrollbar justify-start")}
+        >
+          <button type="button" role="tab" data-state="active" data-slot="tabs-trigger" data-orientation="horizontal" class={tabsTrigger()}>全部</button>
+          {Object.values(typeLabels).map((t) => (
+            <button type="button" role="tab" data-state="inactive" data-slot="tabs-trigger" data-orientation="horizontal" class={tabsTrigger()}>{t}</button>
+          ))}
+        </div>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <button type="button" data-slot="button" class={button("outline")}><Icon name="upload" class="size-4" />上传安装</button>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      {plugins.map((p, i) => {
+        // 操作栏是整行宽度，高亮框只贴合第一张卡片的四个图标按钮
+        const target = i === 0 ? "plugin-actions" : undefined;
+        return (
+          <div class="tour-a-rise space-y-3 rounded-md border p-4" style={`--i:${i}`}>
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-sm font-medium">{p.name}</span>
+                  <span class="text-xs text-muted-foreground">v{p.version}</span>
+                  <span data-slot="badge" class={typeBadge}>{typeLabels[p.type]}</span>
+                </div>
+                <p class="mt-1 text-xs text-muted-foreground">{p.description}</p>
+                <div class="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+                  <span>作者: <a class="hover:underline">Novaix</a></span>
+                </div>
+              </div>
+              {/* 第一张卡片的开关在进场时从关拨到开 */}
+              <Switch checked={p.enabled} class={i === 0 ? "shrink-0 tour-a-switch" : "shrink-0"} />
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" data-slot="tooltip-trigger" data-tour-target={target} class={rowAction}><Icon name="refresh-cw" class="size-4" /></button>
+              <button type="button" data-slot="tooltip-trigger" data-tour-target={target} class={rowAction}><Icon name="settings-2" class="size-4" /></button>
+              <button type="button" data-slot="tooltip-trigger" data-tour-target={target} class={rowAction}><Icon name="package-open" class="size-4" /></button>
+              <button type="button" data-slot="tooltip-trigger" data-tour-target={target} class={rowActionDanger}><Icon name="trash-2" class="size-4" /></button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+
+  <Fragment slot="floats">
+    <!-- 插件市场的插件卡片：页面上的卡片本身没有底色，浮起时补上页面背景色 -->
+    {market.map((item, i) => (
+      <TourFloat x={730 + i * 30} y={488 + i * 134} w={520} z={100} scale={1.2} origin="100% 0" radius="0.5rem" order={i}>
+        <div class="flex items-start justify-between gap-4 rounded-md border p-4">
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-sm font-medium">{item.name}</span>
+              <span class="text-xs text-muted-foreground">v{item.version}</span>
+              <span data-slot="badge" class={typeBadge}>{typeLabels[item.type]}</span>
+              {item.installedVersion && <span data-slot="badge" class={installedBadge}>已安装 v{item.installedVersion}</span>}
+            </div>
+            <p class="mt-1 text-xs text-muted-foreground">{item.description}</p>
+            <p class="mt-1.5 text-xs text-muted-foreground">作者: <a class="hover:underline">Novaix</a></p>
+          </div>
+          <div class="shrink-0">
+            {item.installedVersion ? (
+              <button type="button" data-slot="button" class={button("default")}><Icon name="download" class="size-3.5" />更新</button>
+            ) : (
+              <button type="button" data-slot="button" class={button("outline")}><Icon name="download" class="size-3.5" />安装</button>
+            )}
+          </div>
+        </div>
+      </TourFloat>
+    ))}
+  </Fragment>
+</TourStage>
