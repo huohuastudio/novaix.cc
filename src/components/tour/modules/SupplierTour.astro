@@ -217,7 +217,7 @@ const radioItem =
 
   <Fragment slot="floats">
     <!-- 待处理队列中的人工处理对话框：续费结果无法确认，由管理员核对上游后选择处理方式 -->
-    <TourFloat x={60} y={228} w={512} z={110} scale={1.1} origin="0 0" radius="0.875rem">
+    <TourFloat x={60} y={200} w={512} z={110} scale={1.15} origin="0 0" radius="0.875rem">
       <div role="dialog" data-state="open" data-slot="dialog-content" data-tour-target="attention" class={dialogContent("max-w-lg")}>
         <div data-slot="dialog-header" class={dialogHeader()}>
           <h2 data-slot="dialog-title" class={dialogTitle()}>处理操作 #{attention.id}</h2>
@@ -256,7 +256,7 @@ const radioItem =
     </TourFloat>
 
     <!-- 供应商连接列表的局部：各上游的插件、状态与余额，余额低于告警阈值时标红 -->
-    <TourFloat x={856} y={408} w={400} z={80} scale={1.12} origin="0 0" radius="0.5rem" order={1}>
+    <TourFloat x={836} y={408} w={400} z={80} scale={1.2} origin="0 0" radius="0.5rem" order={1}>
       <div data-tour-target="balance" class="overflow-x-auto rounded-md dark:ring-1 dark:ring-foreground/10">
         <table class={table()}>
           <thead data-slot="table-header" class={tableHeader()}>

@@ -77,6 +77,17 @@ export function initTour(root: HTMLElement) {
     scaled.forEach((el) => (el.style.transform = transform));
   }).observe(stack);
 
+  // 列表按介绍最长的模块预留高度：各模块文字长短不一，否则切换时展台和下方内容会上下跳动
+  const list = items[0].parentElement!;
+  let listWidth = 0;
+  new ResizeObserver(() => {
+    if (list.clientWidth === listWidth) return;
+    listWidth = list.clientWidth;
+    const headers = items.reduce((h, item) => h + item.querySelector("h3")!.offsetHeight, 0);
+    const detail = Math.max(...items.map((item) => item.querySelector<HTMLElement>(".tour-detail > div")!.scrollHeight));
+    list.style.minHeight = `${headers + detail}px`;
+  }).observe(list);
+
   const syncRunning = () => {
     root.toggleAttribute("data-stopped", stopped);
     root.toggleAttribute("data-running", inView && !hovering && !stopped);
